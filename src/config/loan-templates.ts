@@ -25,6 +25,8 @@ export type Template = {
   prepaymentPolicy?: 'ReduceTerm'|'ReduceInstallment';
   prepaymentsAllowed?: boolean;
   allowFirstPayment?: boolean;
+  bankUrl?: string;
+  loanUrl?: string;
   constraints?: Partial<Record<
     'termMonths' | 'nominalAnnualRatePercent' | 'principal' |
     'firstPaymentPercent' | 'firstPaymentAbsolute' |
@@ -86,11 +88,125 @@ export const PRECONFIGURED_TEMPLATES: Template[] = [
     prepaymentPolicy: 'ReduceTerm',
     prepaymentsAllowed: true,
     allowFirstPayment: true,
+    bankUrl: 'https://belinvestbank.by',
+    loanUrl: 'https://myfin.by/bank/belinvestbank/kredity/zhile',
     constraints: {
       termMonths: { type: 'enum', values: [120, 180, 192, 204, 216, 228, 240] }, // 10, 15, 16, 17, 18, 19, 20 years
       nominalAnnualRatePercent: { type: 'range', min: 14.3, max: 18.11, step: 0.01 },
       principal: { type: 'range', min: 1000, step: 1 }, // от 1 000 BYN, до 90% стоимости жилья
       firstPaymentPercent: { type: 'range', min: 10, max: 90, step: 0.1 }, // от 10%
+    },
+  },
+  {
+    id: 'belarusbank-housing',
+    name: 'Belarusbank - Housing Loan',
+    nameI18n: {
+      ru: 'Беларусбанк - Кредит на жилье',
+      be: 'Беларусбанк - Крэдыт на жыллё',
+    },
+    description: 'Loan for acquisition or construction of housing through savings system',
+    descriptionI18n: {
+      ru: 'Кредит на приобретение или строительство жилья по системе стройсбережений',
+      be: 'Крэдыт на набыццё або будаўніцтва жылля па сістэме стройсбережений',
+    },
+    currency: 'BYN',
+    nominalAnnualRatePercent: 17.0,
+    termMonths: undefined,
+    amortization: 'Differentiated',
+    dayCount: 'Actual_365',
+    prepaymentPolicy: 'ReduceTerm',
+    prepaymentsAllowed: true,
+    allowFirstPayment: true,
+    bankUrl: 'https://www.asb.by',
+    loanUrl: 'https://myfin.by/bank/belarusbank/kredity/zhile',
+    constraints: {
+      termMonths: { type: 'enum', values: [120, 180, 240] },
+      principal: { type: 'range', min: 1000, step: 1 },
+      firstPaymentPercent: { type: 'range', min: 10, max: 50, step: 0.1 },
+    },
+  },
+  {
+    id: 'belveb-ulasnaya-mayomasts',
+    name: 'BelVEB Bank - Ulasnaya Mayomasts',
+    nameI18n: {
+      ru: 'Банк БелВЭБ - Уласная маёмасць',
+      be: 'Банк БелВЭБ - Уласная маёмасць',
+    },
+    description: 'Housing loan - Ulasnaya Mayomasts',
+    descriptionI18n: {
+      ru: 'Кредит на жилье - Уласная маёмасць',
+      be: 'Крэдыт на жыллё - Уласная маёмасць',
+    },
+    currency: 'BYN',
+    nominalAnnualRatePercent: 18.18,
+    termMonths: undefined,
+    amortization: 'Differentiated',
+    dayCount: 'Actual_365',
+    prepaymentPolicy: 'ReduceTerm',
+    prepaymentsAllowed: true,
+    allowFirstPayment: true,
+    bankUrl: 'https://belveb.by',
+    loanUrl: 'https://myfin.by/bank/belveb/kredity/zhile',
+    constraints: {
+      termMonths: { type: 'enum', values: [120, 180, 240] },
+      principal: { type: 'range', min: 1000, step: 1 },
+      firstPaymentPercent: { type: 'range', min: 10, max: 70, step: 0.1 },
+    },
+  },
+  {
+    id: 'belgazprombank-skorogo-novoselya',
+    name: 'Belgazprombank - Skorogo Novoselya',
+    nameI18n: {
+      ru: 'Белгазпромбанк - Скоро новоселье',
+      be: 'Белгазпромбанк - Хутка новаселле',
+    },
+    description: 'Program for purchase and construction of housing - Skorogo Novoselya',
+    descriptionI18n: {
+      ru: 'Программа для покупки и строительства жилья - Скоро новоселье',
+      be: 'Праграма для куплі і будаўніцтва жылля - Хутка новаселле',
+    },
+    currency: 'BYN',
+    nominalAnnualRatePercent: 18.9,
+    termMonths: undefined,
+    amortization: 'Differentiated',
+    dayCount: 'Actual_365',
+    prepaymentPolicy: 'ReduceTerm',
+    prepaymentsAllowed: true,
+    allowFirstPayment: true,
+    bankUrl: 'https://belgazprombank.by',
+    loanUrl: 'https://myfin.by/bank/belgazprombank/kredity/zhile',
+    constraints: {
+      termMonths: { type: 'enum', values: [120, 180, 240] },
+      principal: { type: 'range', min: 1000, step: 1 },
+      firstPaymentPercent: { type: 'range', min: 10, max: 60, step: 0.1 },
+    },
+  },
+  {
+    id: 'belagroprombank-housing-construction',
+    name: 'Belagroprombank - Housing Construction Loan',
+    nameI18n: {
+      ru: 'Белагропромбанк - Кредит на строительство жилого помещения',
+      be: 'Белагропромбанк - Крэдыт на будаўніцтва жылога памяшкання',
+    },
+    description: 'Loan for construction of residential premises',
+    descriptionI18n: {
+      ru: 'Кредит на строительство жилого помещения',
+      be: 'Крэдыт на будаўніцтва жылога памяшкання',
+    },
+    currency: 'BYN',
+    nominalAnnualRatePercent: 21.0,
+    termMonths: undefined,
+    amortization: 'Differentiated',
+    dayCount: 'Actual_365',
+    prepaymentPolicy: 'ReduceTerm',
+    prepaymentsAllowed: true,
+    allowFirstPayment: true,
+    bankUrl: 'https://www.belapb.by',
+    loanUrl: 'https://myfin.by/bank/belagroprombank/kredity/zhile',
+    constraints: {
+      termMonths: { type: 'enum', values: [120, 180, 240] },
+      principal: { type: 'range', min: 1000, step: 1 },
+      firstPaymentPercent: { type: 'range', min: 10, max: 50, step: 0.1 },
     },
   },
 ];

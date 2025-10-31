@@ -2,3 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  body {
+    @apply text-neutral-900 antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold text-neutral-900;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:bg-primary-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  }
+  
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-lg bg-white px-4 py-2.5 text-sm font-medium text-neutral-700 shadow-soft border border-neutral-300 transition-all duration-200 hover:bg-neutral-50 hover:shadow-medium focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  }
+  
+  .input-base {
+    @apply w-full rounded-input border border-neutral-300 bg-white px-3 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-colors;
+  }
+  
+  .card-base {
+    @apply rounded-card bg-white border border-neutral-200 shadow-soft transition-shadow duration-200;
+  }
+  
+  .card-hover {
+    @apply card-base hover:shadow-card-hover;
+  }
+}
+

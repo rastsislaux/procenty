@@ -11,49 +11,25 @@ import { ConstrainedNumberInput } from '../components/ConstrainedNumberInput';
 import { useI18n } from '../../i18n/context';
 import { getTemplateName } from '../../i18n/utils';
 import { IconButton } from '../components/IconButton';
+import { ValidationErrors } from './ComparePage/ValidationErrors';
+import { ComparePanelWithFade } from './ComparePage/ComparePanelWithFade';
+import { TemplateConditionsModal } from '../components/TemplateConditionsModal';
 
-function ValidationErrors({ title, errors }: { title: string; errors: string[] }) {
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    // Trigger fade-in right after mount
-    const id = window.setTimeout(() => setVisible(true), 0);
-    return () => window.clearTimeout(id);
-  }, []);
-  return (
-    <div className={`mt-2 rounded border border-red-300 bg-red-50 p-2 transition-opacity duration-[250ms] ${visible ? 'opacity-100' : 'opacity-0'}`}>
-      <div className="text-xs font-medium text-red-800 mb-1">{title}:</div>
-      <ul className="list-disc list-inside text-xs text-red-700 space-y-1">
-        {errors.map((err, idx) => (
-          <li key={idx}>{err}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function ComparePanelWithFade({ results, names }: { results: any[]; names: Record<string, string> }) {
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const id = window.setTimeout(() => setVisible(true), 0);
-    return () => window.clearTimeout(id);
-  }, []);
-  return (
-    <div className={`transition-opacity duration-[250ms] ${visible ? 'opacity-100' : 'opacity-0'}`}>
-      <ComparePanel results={results} names={names} />
-    </div>
-  );
-}
+// extracted subcomponents imported above
 
 export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: string[] }) {
   const { t, language } = useI18n();
-  const state = loadTemplates();
-  const all = [...state.preconfigured, ...state.user];
+  // Load template state only once to avoid identity changes every render triggering effects
+  const state = useMemo(() => loadTemplates(), []);
+  const all = useMemo(() => [...state.preconfigured, ...state.user], [state]);
   const selected = useMemo(() => all.filter(t => selectedTemplateIds.includes(t.id)), [all, selectedTemplateIds]);
   type PerTemplateInputs = { principal: string; rate?: number; term?: number; firstPayment?: FirstPaymentConfig; prepayments?: any[]; graceReducedRatePercent?: number; graceMonths?: number };
   const [inputs, setInputs] = useState<Record<string, PerTemplateInputs>>({});
   const [results, setResults] = useState<any[]>([]);
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [conditionsModalOpen, setConditionsModalOpen] = useState(false);
+  const [selectedTemplateForConditions, setSelectedTemplateForConditions] = useState<Template | null>(null);
   const nameMap = useMemo(() => Object.fromEntries(all.map(t => [t.id, getTemplateName(t, language) || t.id])), [all, language]);
 
   function ensureInputFor(tpl: Template) {
@@ -161,30 +137,42 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
   }, [selected, inputs]);
 
   return (
-    <div className="space-y-4">
-      <div className="rounded border bg-white p-3">
+    <div className="space-y-6">
+      <div className="card-base p-5">
           {selected.length > 0 ? (
             <>
               {results.length > 0 && (
-                <ComparePanelWithFade results={results} names={nameMap} />
+                <div className="mb-6">
+                  <ComparePanelWithFade results={results} names={nameMap} />
+                </div>
               )}
-              <div className="mb-3 text-sm text-gray-600">
-                {t.compare.title}: {selected.map(t => getTemplateName(t, language) || t.id).join(', ')}
+              <div className="mb-4 text-sm font-medium text-neutral-700 bg-primary-50 border border-primary-200 rounded-lg px-4 py-2.5">
+                <span className="text-primary-900">{t.compare.title}:</span> <span className="text-primary-700">{selected.map(t => getTemplateName(t, language) || t.id).join(', ')}</span>
               </div>
-              <div className="mt-3 space-y-3">
+              <div className="mt-4 space-y-4">
               {selected.map((template) => (
-                <div key={template.id} className="rounded border p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="text-sm font-medium">{getTemplateName(template, language) || template.id}</div>
+                <div key={template.id} className="card-base p-4 border-l-4 border-l-primary-500">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-base font-semibold text-neutral-900">{getTemplateName(template, language) || template.id}</h3>
+                      <button
+                        onClick={() => {
+                          setSelectedTemplateForConditions(template);
+                          setConditionsModalOpen(true);
+                        }}
+                        className="px-2 py-1 rounded border border-primary-300 bg-primary-50 text-xs font-medium text-primary-700 hover:bg-primary-100 transition-colors"
+                        title={language === 'ru' ? 'Условия кредита' : language === 'be' ? 'Умовы крэдыта' : 'Loan Terms'}
+                      >
+                        {language === 'ru' ? 'Условия' : language === 'be' ? 'Умовы' : 'Terms'}
+                      </button>
                       {collapsed[template.id] && errors[template.id] && errors[template.id].length > 0 && (
                         <span className="relative inline-flex group">
                           <span
-                            className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-red-100 text-red-700 border border-red-300"
+                            className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 border border-red-300"
                           >
                             {errors[template.id].length}
                           </span>
-                          <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-opacity z-10">
+                          <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-neutral-900 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-opacity z-10">
                             {t.compare.validationErrors}: {errors[template.id].length}. {t.common?.show || 'Show'}
                           </span>
                         </span>
@@ -194,7 +182,7 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
                       label={collapsed[template.id] ? 'Expand' : 'Collapse'}
                       title={collapsed[template.id] ? 'Expand' : 'Collapse'}
                       onClick={() => setCollapsed(prev => ({ ...prev, [template.id]: !prev[template.id] }))}
-                      className="w-7 h-7"
+                      className="w-8 h-8"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -211,57 +199,59 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
                     </IconButton>
                   </div>
                   <div className={`overflow-hidden transition-[max-height,opacity] duration-[250ms] ${collapsed[template.id] ? 'max-h-0 opacity-0' : 'max-h-[2000px] opacity-100'}`}>
-                  <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700">{t.calculator.principal}</label>
-                      <input className="mt-1 w-full rounded border px-2 py-2 text-sm" value={inputs[template.id]?.principal ?? '20000'} onChange={(e) => updateInput(template.id, { principal: e.target.value })} />
+                  {/* Main loan parameters - compact horizontal layout */}
+                  <div className="flex flex-wrap items-end gap-3">
+                    <div className="flex-shrink-0">
+                      <label className="block text-xs font-medium text-neutral-700 mb-1.5">{t.calculator.principal}</label>
+                      <input className="input-base w-32" value={inputs[template.id]?.principal ?? '20000'} onChange={(e) => updateInput(template.id, { principal: e.target.value })} />
                     </div>
                     {template.nominalAnnualRatePercent == null && (
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700">{t.calculator.rate}</label>
+                      <div className="flex-shrink-0">
+                        <label className="block text-xs font-medium text-neutral-700 mb-1.5">{t.calculator.rate}</label>
                         <ConstrainedNumberInput
                           value={inputs[template.id]?.rate}
                           onChange={(rate) => updateInput(template.id, { rate })}
                           constraint={template.constraints?.nominalAnnualRatePercent}
                           step={0.01}
+                          className="w-24"
                         />
                       </div>
                     )}
                     {template.termMonths == null && (
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700">{t.calculator.termMonths}</label>
+                      <div className="flex-shrink-0">
+                        <label className="block text-xs font-medium text-neutral-700 mb-1.5">{t.calculator.termMonths}</label>
                         <ConstrainedNumberInput
                           value={inputs[template.id]?.term}
                           onChange={(term) => updateInput(template.id, { term })}
                           constraint={template.constraints?.termMonths}
                           step={1}
+                          className="w-20"
                         />
                       </div>
                     )}
-                  </div>
-                  {template.grace && template.grace.type === 'ReducedRate' && template.grace.reducedAnnualRatePercent == null && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700">{t.templates.reducedRate}</label>
+                    {template.grace && template.grace.type === 'ReducedRate' && template.grace.reducedAnnualRatePercent == null && (
+                      <div className="flex-shrink-0">
+                        <label className="block text-xs font-medium text-neutral-700 mb-1.5">{t.templates.reducedRate}</label>
                         <ConstrainedNumberInput
                           value={inputs[template.id]?.graceReducedRatePercent}
                           onChange={(v) => updateInput(template.id, { graceReducedRatePercent: v })}
                           constraint={template.constraints?.graceReducedAnnualRatePercent}
                           step={0.01}
+                          className="w-24"
                         />
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
+                  
+                  {/* First payment - inline with main params */}
                   {template.allowFirstPayment && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700">{t.calculator.firstPaymentType}</label>
-                        <div className="mt-1">
-                          <Select options={[{ value: 'Percent', label: t.fields.percent }, { value: 'Absolute', label: t.fields.absolute }]} value={inputs[template.id]?.firstPayment?.type ?? 'Percent'} onChange={(v) => updateInput(template.id, { firstPayment: { ...(inputs[template.id]?.firstPayment ?? { value: 0 }), type: v as any } })} />
-                        </div>
+                    <div className="flex flex-wrap items-end gap-3 mt-3 pt-3 border-t border-neutral-200">
+                      <div className="flex-shrink-0">
+                        <label className="block text-xs font-medium text-neutral-700 mb-1.5">{t.calculator.firstPaymentType}</label>
+                        <Select className="w-32" options={[{ value: 'Percent', label: t.fields.percent }, { value: 'Absolute', label: t.fields.absolute }]} value={inputs[template.id]?.firstPayment?.type ?? 'Percent'} onChange={(v) => updateInput(template.id, { firstPayment: { ...(inputs[template.id]?.firstPayment ?? { value: 0 }), type: v as any } })} />
                       </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700">{t.calculator.firstPaymentValue}</label>
+                      <div className="flex-shrink-0">
+                        <label className="block text-xs font-medium text-neutral-700 mb-1.5">{t.calculator.firstPaymentValue}</label>
                         <ConstrainedNumberInput
                           value={inputs[template.id]?.firstPayment?.value ?? 0}
                           onChange={(value) => updateInput(template.id, { firstPayment: { ...(inputs[template.id]?.firstPayment ?? { type: 'Percent' as const }), value: value ?? 0 } })}
@@ -273,35 +263,51 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
                           step={
                             inputs[template.id]?.firstPayment?.type === 'Percent' ? 0.1 : 1
                           }
+                          className={inputs[template.id]?.firstPayment?.type === 'Percent' ? 'w-24' : 'w-32'}
                         />
                       </div>
                     </div>
                   )}
+                  
+                  {/* Prepayments - full width section */}
                   {template.prepaymentsAllowed && (
-                    <div className="mt-2">
+                    <div className="mt-3 pt-3 border-t border-neutral-200">
                       <PrepaymentEditor
                         events={inputs[template.id]?.prepayments ?? []}
                         onChange={(ev) => updateInput(template.id, { prepayments: ev })}
                       />
                     </div>
                   )}
+                  
+                  {/* Validation errors */}
                   {errors[template.id] && errors[template.id].length > 0 && (
-                    <ValidationErrors title={t.compare.validationErrors} errors={errors[template.id]} />
+                    <div className="mt-3">
+                      <ValidationErrors title={t.compare.validationErrors} errors={errors[template.id]} />
+                    </div>
                   )}
                   </div>
                 </div>
               ))}
               </div>
               {selected.length > 0 && results.length === 0 && Object.keys(errors).length === selected.length && (
-                <div className="mt-3 text-sm text-gray-600 italic">{t.compare.noResults}</div>
+                <div className="mt-4 text-sm text-neutral-600 italic bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-3">{t.compare.noResults}</div>
               )}
             </>
           ) : (
-            <div className="text-sm text-gray-500 italic">
+            <div className="text-sm text-neutral-500 italic bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-3">
               {t.compare.selectTemplatesBelow}
             </div>
           )}
         </div>
+
+      <TemplateConditionsModal
+        template={selectedTemplateForConditions}
+        isOpen={conditionsModalOpen}
+        onClose={() => {
+          setConditionsModalOpen(false);
+          setSelectedTemplateForConditions(null);
+        }}
+      />
     </div>
   );
 }

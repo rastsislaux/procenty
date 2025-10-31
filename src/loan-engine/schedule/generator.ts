@@ -119,9 +119,16 @@ export function computeLoan(config: LoanConfig): LoanResult {
         notes.push("prepayment");
       }
 
-      installment = remaining.lessThan(epsilon) ? interest.plus(principal) : baseInstallment;
+      // Installment should include base installment plus any prepayment
+      // For the last payment (when remaining is near zero), use actual interest + principal + prepayment
+      if (remaining.lessThan(epsilon)) {
+        installment = interest.plus(principal).plus(extraPrepay);
+      } else {
+        installment = baseInstallment.plus(extraPrepay);
+      }
       interestPortion = interest;
-      principalPortion = principal;
+      // Principal portion should include the prepayment amount as well
+      principalPortion = principal.plus(extraPrepay);
     }
 
     // Clamp last payment to clear remainder
