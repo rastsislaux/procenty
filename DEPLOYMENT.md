@@ -22,7 +22,7 @@ This project is configured to automatically deploy to GitHub Pages using GitHub 
      - 185.199.111.153
 
 4. **Deployment**:
-   - The site will automatically deploy on every push to the `main` branch
+   - The site will automatically deploy on every push to the `master` branch
    - You can also manually trigger deployment via Actions tab → "Deploy to GitHub Pages" → "Run workflow"
 
 The CNAME file is automatically included in the build output from the `public/` directory.
