@@ -1,7 +1,7 @@
 import React from 'react';
 import { useI18n } from './context';
 import { Language } from './types';
-import { Select } from '../loan-ui/components/Select';
+import { Select } from '../shared/components/Select';
 
 const languages: Array<{ value: Language; label: string }> = [
   { value: 'en', label: 'English' },

@@ -1,10 +1,20 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useI18n } from '../../i18n/context';
+import { SEO } from '../../shared/components/SEO';
+import { WebsiteStructuredData, OrganizationStructuredData } from '../../shared/components/StructuredData';
 
 export function HomePage() {
   const { t } = useI18n();
   return (
+    <>
+      <SEO 
+        title={t.seo.homeTitle}
+        description={t.seo.homeDescription}
+        keywords={t.seo.homeKeywords}
+      />
+      <WebsiteStructuredData />
+      <OrganizationStructuredData />
     <div className="relative overflow-hidden">
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary-50 via-white to-accent-50" />
       <div className="mx-auto max-w-6xl px-4 py-16">
@@ -60,6 +70,7 @@ export function HomePage() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 

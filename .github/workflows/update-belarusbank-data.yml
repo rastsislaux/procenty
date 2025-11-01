@@ -1,0 +1,61 @@
+name: Update Belarusbank Loan Data
+
+on:
+  schedule:
+    # Run daily at 3:00 AM UTC
+    - cron: '0 3 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required to commit and push changes
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Fetch Belarusbank API data
+        id: fetch-data
+        run: |
+          echo "Fetching data from Belarusbank API..."
+          
+          # Fetch data from API
+          response=$(curl -s "https://belarusbank.by/api/kredits_info" || echo "")
+          
+          if [ -z "$response" ]; then
+            echo "❌ Failed to fetch data from API"
+            exit 1
+          fi
+          
+          # Check if response is valid JSON
+          if echo "$response" | jq empty 2>/dev/null; then
+            items_count=$(echo "$response" | jq 'length')
+            echo "✅ Successfully fetched and validated data: $items_count items"
+            echo "$response" > public/data/belarusbank-loans.json
+            echo "items_count=$items_count" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Invalid JSON response"
+            echo "Response preview: ${response:0:200}"
+            exit 1
+          fi
+        continue-on-error: false
+        
+      - name: Commit and push changes
+        if: steps.fetch-data.outcome == 'success'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add public/data/belarusbank-loans.json
+          
+          # Only commit if there are changes
+          if ! git diff --staged --quiet; then
+            git commit -m "Update Belarusbank loan data [skip ci]" || exit 0
+            git push
+            echo "✅ Successfully committed and pushed updated data"
+          else
+            echo "ℹ️ No changes to commit (data is up to date)"
+          fi
+        continue-on-error: true
+

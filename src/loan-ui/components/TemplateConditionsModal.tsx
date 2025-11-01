@@ -3,6 +3,9 @@ import { Dialog } from '@headlessui/react';
 import { Template } from '../../config/loan-templates';
 import { useI18n } from '../../i18n/context';
 import { getTemplateName } from '../../i18n/utils';
+import { ModalOverlay, ModalContainer, ModalPanel } from '../../shared/components/Modal';
+import { Link } from '../../shared/components/Link';
+import { Button } from '../../shared/components/Button';
 
 export function TemplateConditionsModal({ 
   template, 
@@ -382,9 +385,9 @@ export function TemplateConditionsModal({
 
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
-      <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="w-full max-w-2xl rounded-lg bg-white shadow-large max-h-[85vh] overflow-hidden flex flex-col">
+      <ModalOverlay onClick={onClose} />
+      <ModalContainer onClick={onClose}>
+        <ModalPanel maxWidth="2xl" className="max-h-[85vh] overflow-hidden flex flex-col" onClose={onClose} showCloseButton={false}>
           <div className="px-6 py-4 border-b border-neutral-200 flex-shrink-0">
             <Dialog.Title className="text-xl font-semibold text-neutral-900">
               {language === 'ru' ? 'Условия кредита' : language === 'be' ? 'Умовы крэдыта' : 'Loan Terms'}
@@ -411,45 +414,45 @@ export function TemplateConditionsModal({
             {(template.bankUrl || template.loanUrl) && (
               <div className="mt-6 pt-6 border-t border-neutral-200 space-y-2">
                 {template.bankUrl && (
-                  <a 
+                  <Link 
                     href={template.bankUrl} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors"
+                    icon={
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                      </svg>
+                    }
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                    </svg>
                     {language === 'ru' ? 'Официальный сайт банка' : language === 'be' ? 'Афіцыйны сайт банка' : 'Official bank website'}
-                  </a>
+                  </Link>
                 )}
                 {template.loanUrl && (
-                  <a 
+                  <Link 
                     href={template.loanUrl} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors ml-4"
+                    className="ml-4"
+                    icon={
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                      </svg>
+                    }
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                    </svg>
                     {language === 'ru' ? 'Страница кредитного продукта' : language === 'be' ? 'Старонка крэдытнага прадукту' : 'Loan product page'}
-                  </a>
+                  </Link>
                 )}
               </div>
             )}
           </div>
 
           <div className="px-6 py-4 border-t border-neutral-200 flex-shrink-0 flex justify-end">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 rounded-lg border border-neutral-300 bg-white text-sm font-medium text-neutral-700 shadow-soft hover:bg-neutral-50 hover:shadow-medium transition-all duration-200"
-            >
+            <Button variant="secondary" onClick={onClose}>
               {t.common.close}
-            </button>
+            </Button>
           </div>
-        </Dialog.Panel>
-      </div>
+        </ModalPanel>
+      </ModalContainer>
     </Dialog>
   );
 }

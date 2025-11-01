@@ -1,6 +1,7 @@
 import React from 'react';
 import { Template } from '../../config/loan-templates';
 import { useI18n } from '../../i18n/context';
+import { Link } from '../../shared/components/Link';
 
 export function TemplateConfigView({ template }: { template: Template }) {
   const { t, language } = useI18n();
@@ -155,30 +156,35 @@ export function TemplateConfigView({ template }: { template: Template }) {
       {(template.bankUrl || template.loanUrl) && (
         <div className="mt-3 pt-3 border-t border-neutral-200 space-y-2">
           {template.bankUrl && (
-            <a 
+            <Link 
               href={template.bankUrl} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-primary-600 hover:text-primary-700 transition-colors"
+              size="xs"
+              icon={
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                </svg>
+              }
             >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-              </svg>
               {language === 'ru' ? 'Сайт банка' : language === 'be' ? 'Сайт банка' : 'Bank website'}
-            </a>
+            </Link>
           )}
           {template.loanUrl && (
-            <a 
+            <Link 
               href={template.loanUrl} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-primary-600 hover:text-primary-700 transition-colors ml-3"
+              size="xs"
+              className="ml-3"
+              icon={
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                </svg>
+              }
             >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-              </svg>
               {language === 'ru' ? 'Страница кредита' : language === 'be' ? 'Старонка крэдыта' : 'Loan page'}
-            </a>
+            </Link>
           )}
         </div>
       )}

@@ -3,17 +3,22 @@ import { loadTemplates } from '../state/templatesStore';
 import { Template } from '../../config/loan-templates';
 import { computeBatch } from '../../loan-engine/batch';
 import { templateToConfig, validateAgainstConstraints, convertUIEventsToEngine } from '../engineAdapter';
-import { FirstPaymentConfig } from '../../loan-engine';
+import { FirstPaymentConfig, LoanResult } from '../../loan-engine';
 import { ComparePanel } from '../components/ComparePanel';
 import { PrepaymentEditor } from '../components/PrepaymentEditor';
-import { Select } from '../components/Select';
-import { ConstrainedNumberInput } from '../components/ConstrainedNumberInput';
+import { Select } from '../../shared/components/Select';
+import { NumberInput as ConstrainedNumberInput } from '../../shared/components/NumberInput';
 import { useI18n } from '../../i18n/context';
 import { getTemplateName } from '../../i18n/utils';
-import { IconButton } from '../components/IconButton';
+import { IconButton } from '../../shared/components/IconButton';
 import { ValidationErrors } from './ComparePage/ValidationErrors';
 import { ComparePanelWithFade } from './ComparePage/ComparePanelWithFade';
 import { TemplateConditionsModal } from '../components/TemplateConditionsModal';
+import { EmptyState } from '../../shared/components/EmptyState';
+import { Badge } from '../../shared/components/Badge';
+import { Button } from '../../shared/components/Button';
+import { convertCurrencyString, getAvailableCurrencies } from '../../shared/utils/currencyConverter';
+import { FormLabel } from '../../shared/components/FormLabel';
 
 // extracted subcomponents imported above
 
@@ -21,24 +26,46 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
   const { t, language } = useI18n();
   // Load template state only once to avoid identity changes every render triggering effects
   const state = useMemo(() => loadTemplates(), []);
-  const all = useMemo(() => [...state.preconfigured, ...state.user], [state]);
+  const all = useMemo(() => [...state.preconfigured, ...state.user, ...state.dynamic], [state]);
   const selected = useMemo(() => all.filter(t => selectedTemplateIds.includes(t.id)), [all, selectedTemplateIds]);
   type PerTemplateInputs = { principal: string; rate?: number; term?: number; firstPayment?: FirstPaymentConfig; prepayments?: any[]; graceReducedRatePercent?: number; graceMonths?: number };
   const [inputs, setInputs] = useState<Record<string, PerTemplateInputs>>({});
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<LoanResult[]>([]);
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [conditionsModalOpen, setConditionsModalOpen] = useState(false);
   const [selectedTemplateForConditions, setSelectedTemplateForConditions] = useState<Template | null>(null);
   const nameMap = useMemo(() => Object.fromEntries(all.map(t => [t.id, getTemplateName(t, language) || t.id])), [all, language]);
+  
+  // Detect if multiple currencies are present
+  const currenciesInResults = useMemo(() => {
+    const unique = new Set(results.map(r => r.currency));
+    return Array.from(unique);
+  }, [results]);
+  
+  const hasMultipleCurrencies = currenciesInResults.length > 1;
+  
+  // Base currency selector - default to USD, will update when results are available
+  const [baseCurrency, setBaseCurrency] = useState<string>('USD');
+  
+  // Update base currency when currencies change
+  useEffect(() => {
+    if (currenciesInResults.length > 0) {
+      // If current base currency is not in available currencies, or if we only have one currency, set it to the first one
+      if (!currenciesInResults.includes(baseCurrency) || (!hasMultipleCurrencies && currenciesInResults.length > 0)) {
+        setBaseCurrency(currenciesInResults[0]);
+      }
+    }
+  }, [currenciesInResults, hasMultipleCurrencies, baseCurrency]);
+  
+  // Store original results for tables, conversion will happen in ComparePanel for charts only
 
   function ensureInputFor(tpl: Template) {
     setInputs((prev) => {
       if (prev[tpl.id]) return prev;
       const next: PerTemplateInputs = { principal: '20000' };
-      if (tpl.allowFirstPayment) {
-        next.firstPayment = { type: 'Percent', value: 0 };
-      }
+      // Don't initialize firstPayment - let user set it if needed
+      // Empty will be treated as 0 in calculations
       if (tpl.grace && tpl.grace.type === 'ReducedRate' && tpl.grace.reducedAnnualRatePercent == null) {
         const c = tpl.constraints?.graceReducedAnnualRatePercent;
         if (c && c.type === 'range' && c.min != null) {
@@ -92,9 +119,16 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
         const inp = inputs[template.id] ?? { principal: '20000' };
         try {
           const convertedPrepayments = template.prepaymentsAllowed && inp.prepayments && inp.prepayments.length > 0 ? convertUIEventsToEngine(inp.prepayments) : undefined;
+          // Treat undefined firstPayment.value as 0 for validation and calculation
+          const firstPaymentForValidation = inp.firstPayment?.value != null 
+            ? inp.firstPayment 
+            : inp.firstPayment 
+              ? { ...inp.firstPayment, value: 0 }
+              : undefined;
+          
           const val = validateAgainstConstraints(
             template,
-            { ...inp, prepayments: convertedPrepayments },
+            { ...inp, prepayments: convertedPrepayments, firstPayment: firstPaymentForValidation },
             getErrorMsg
           );
           if (!val.ok) {
@@ -107,7 +141,7 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
               principal: inp.principal,
               rate: inp.rate ?? template.nominalAnnualRatePercent,
               term: inp.term ?? template.termMonths,
-              firstPayment: inp.firstPayment,
+              firstPayment: firstPaymentForValidation,
               prepayments: convertedPrepayments,
               graceMonths: inp.graceMonths,
               graceReducedRatePercent: inp.graceReducedRatePercent,
@@ -143,7 +177,13 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
             <>
               {results.length > 0 && (
                 <div className="mb-6">
-                  <ComparePanelWithFade results={results} names={nameMap} />
+                  <ComparePanelWithFade 
+                    results={results} 
+                    names={nameMap} 
+                    baseCurrency={hasMultipleCurrencies ? baseCurrency : undefined}
+                    onBaseCurrencyChange={hasMultipleCurrencies ? (v) => setBaseCurrency(v) : undefined}
+                    availableCurrencies={currenciesInResults}
+                  />
                 </div>
               )}
               <div className="mb-4 text-sm font-medium text-neutral-700 bg-primary-50 border border-primary-200 rounded-lg px-4 py-2.5">
@@ -155,23 +195,22 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
                       <h3 className="text-base font-semibold text-neutral-900">{getTemplateName(template, language) || template.id}</h3>
-                      <button
+                      <Button
+                        variant="primary-outline"
+                        size="xs"
                         onClick={() => {
                           setSelectedTemplateForConditions(template);
                           setConditionsModalOpen(true);
                         }}
-                        className="px-2 py-1 rounded border border-primary-300 bg-primary-50 text-xs font-medium text-primary-700 hover:bg-primary-100 transition-colors"
                         title={language === 'ru' ? 'Условия кредита' : language === 'be' ? 'Умовы крэдыта' : 'Loan Terms'}
                       >
                         {language === 'ru' ? 'Условия' : language === 'be' ? 'Умовы' : 'Terms'}
-                      </button>
+                      </Button>
                       {collapsed[template.id] && errors[template.id] && errors[template.id].length > 0 && (
                         <span className="relative inline-flex group">
-                          <span
-                            className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 border border-red-300"
-                          >
+                          <Badge variant="error">
                             {errors[template.id].length}
-                          </span>
+                          </Badge>
                           <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-neutral-900 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-opacity z-10">
                             {t.compare.validationErrors}: {errors[template.id].length}. {t.common?.show || 'Show'}
                           </span>
@@ -203,7 +242,10 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
                   <div className="flex flex-wrap items-end gap-3">
                     <div className="flex-shrink-0">
                       <label className="block text-xs font-medium text-neutral-700 mb-1.5">{t.calculator.principal}</label>
-                      <input className="input-base w-32" value={inputs[template.id]?.principal ?? '20000'} onChange={(e) => updateInput(template.id, { principal: e.target.value })} />
+                      <div className="relative inline-flex items-center">
+                        <input className="input-base w-32 pr-10" value={inputs[template.id]?.principal ?? '20000'} onChange={(e) => updateInput(template.id, { principal: e.target.value })} />
+                        <span className="absolute right-3 text-sm text-neutral-500 pointer-events-none">{template.currency}</span>
+                      </div>
                     </div>
                     {template.nominalAnnualRatePercent == null && (
                       <div className="flex-shrink-0">
@@ -214,6 +256,7 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
                           constraint={template.constraints?.nominalAnnualRatePercent}
                           step={0.01}
                           className="w-24"
+                          unit="%"
                         />
                       </div>
                     )}
@@ -226,6 +269,7 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
                           constraint={template.constraints?.termMonths}
                           step={1}
                           className="w-20"
+                          unit={language === 'ru' ? 'мес.' : language === 'be' ? 'мес.' : 'months'}
                         />
                       </div>
                     )}
@@ -238,6 +282,7 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
                           constraint={template.constraints?.graceReducedAnnualRatePercent}
                           step={0.01}
                           className="w-24"
+                          unit="%"
                         />
                       </div>
                     )}
@@ -252,19 +297,25 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
                       </div>
                       <div className="flex-shrink-0">
                         <label className="block text-xs font-medium text-neutral-700 mb-1.5">{t.calculator.firstPaymentValue}</label>
-                        <ConstrainedNumberInput
-                          value={inputs[template.id]?.firstPayment?.value ?? 0}
-                          onChange={(value) => updateInput(template.id, { firstPayment: { ...(inputs[template.id]?.firstPayment ?? { type: 'Percent' as const }), value: value ?? 0 } })}
-                          constraint={
-                            inputs[template.id]?.firstPayment?.type === 'Percent'
-                              ? template.constraints?.firstPaymentPercent
-                              : template.constraints?.firstPaymentAbsolute
-                          }
-                          step={
-                            inputs[template.id]?.firstPayment?.type === 'Percent' ? 0.1 : 1
-                          }
-                          className={inputs[template.id]?.firstPayment?.type === 'Percent' ? 'w-24' : 'w-32'}
-                        />
+                        {(() => {
+                          const firstPaymentType = inputs[template.id]?.firstPayment?.type ?? 'Percent';
+                          const isPercent = firstPaymentType === 'Percent';
+                          return (
+                            <ConstrainedNumberInput
+                              value={inputs[template.id]?.firstPayment?.value}
+                              onChange={(value) => updateInput(template.id, { firstPayment: { ...(inputs[template.id]?.firstPayment ?? { type: 'Percent' as const }), value: value ?? 0 } })}
+                              constraint={
+                                isPercent
+                                  ? template.constraints?.firstPaymentPercent
+                                  : template.constraints?.firstPaymentAbsolute
+                              }
+                              step={isPercent ? 0.1 : 1}
+                              className={isPercent ? 'w-24' : 'w-32'}
+                              unit={isPercent ? '%' : template.currency}
+                              allowEmpty={true}
+                            />
+                          );
+                        })()}
                       </div>
                     </div>
                   )}
@@ -290,13 +341,13 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
               ))}
               </div>
               {selected.length > 0 && results.length === 0 && Object.keys(errors).length === selected.length && (
-                <div className="mt-4 text-sm text-neutral-600 italic bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-3">{t.compare.noResults}</div>
+                <div className="mt-4">
+                  <EmptyState message={t.compare.noResults} />
+                </div>
               )}
             </>
           ) : (
-            <div className="text-sm text-neutral-500 italic bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-3">
-              {t.compare.selectTemplatesBelow}
-            </div>
+            <EmptyState message={t.compare.selectTemplatesBelow} />
           )}
         </div>
 

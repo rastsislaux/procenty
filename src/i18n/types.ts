@@ -17,6 +17,27 @@ export interface Translations {
     hide: string;
     select: string;
     selected: string;
+    goHome: string;
+    goBack: string;
+    refreshPage: string;
+    goToCalculator: string;
+  };
+  errorPages: {
+    somethingWentWrong: string;
+    unexpectedError: string;
+    pageNotFound: string;
+    pageNotFoundDesc: string;
+    tryThese: string;
+    errorOccurred: string;
+    refreshPage: string;
+  };
+  seo: {
+    homeTitle: string;
+    homeDescription: string;
+    homeKeywords: string;
+    appTitle: string;
+    appDescription: string;
+    appKeywords: string;
   };
   landing: {
     title: string;
@@ -55,17 +76,31 @@ export interface Translations {
     amortization: string;
     dayCount: string;
     gracePeriod: string;
-    prepaymentPolicy: string;
-    allowFirstPayment: string;
-    allowPrepayments: string;
-    graceType: string;
+      prepaymentPolicy: string;
+      allowFirstPayment: string;
+      allowPrepayments: string;
+      graceType: string;
       graceMonths: string;
       reducedRate: string;
       prepaymentPolicyType: string;
       config: string;
       showConfiguration: string;
       hideConfiguration: string;
-    searchPlaceholder: string;
+      searchPlaceholder: string;
+      bankUrl: string;
+      loanUrl: string;
+      rate: string;
+      termMonths: string;
+      nameEn: string;
+      nameRu: string;
+      nameBe: string;
+      descriptionEn: string;
+      descriptionRu: string;
+      descriptionBe: string;
+      interestOnly: string;
+      reducedRateType: string;
+      reduceTerm: string;
+      reduceInstallment: string;
     };
   calculator: {
     title: string;
@@ -97,6 +132,13 @@ export interface Translations {
     validationErrors: string;
     noResults: string;
     selectTemplatesBelow: string;
+    baseCurrency: string;
+    baseCurrencyDesc: string;
+    convertedToBase: string;
+    multiCurrencyGraphNote: string;
+    exchangeRates: string;
+    ratesByExchangeRateApi: string;
+    ratesByExchangeRateApiTitle: string;
   };
   schedule: {
     month: string;

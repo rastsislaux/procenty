@@ -4,13 +4,41 @@ import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend } f
 import { Dialog } from '@headlessui/react';
 import { ScheduleTable } from './ScheduleTable';
 import { useI18n } from '../../i18n/context';
+import {
+  TableContainer,
+  Table,
+  TableHeader,
+  TableHeaderCell,
+  TableBody,
+  TableRow,
+  TableCell,
+} from '../../shared/components/Table';
+import { ModalOverlay, ModalContainer, ModalPanel } from '../../shared/components/Modal';
+import { convertCurrencyString, getCachedExchangeRates } from '../../shared/utils/currencyConverter';
+import { Select } from '../../shared/components/Select';
+import { FormLabel } from '../../shared/components/FormLabel';
 
-export function ComparePanel({ results, names }: { results: LoanResult[]; names?: Record<string, string> }) {
+export function ComparePanel({ 
+  results, 
+  names, 
+  baseCurrency,
+  onBaseCurrencyChange,
+  availableCurrencies
+}: { 
+  results: LoanResult[]; 
+  names?: Record<string, string>; 
+  baseCurrency?: string;
+  onBaseCurrencyChange?: (v: string) => void;
+  availableCurrencies?: string[];
+}) {
   const { t } = useI18n();
   const [selected, setSelected] = useState<LoanResult | null>(null);
   const [showInstallment, setShowInstallment] = useState(true);
   const [showPrincipal, setShowPrincipal] = useState(false);
   const [showInterest, setShowInterest] = useState(false);
+  
+  // Get exchange rates for display
+  const exchangeRates = useMemo(() => getCachedExchangeRates(), []);
   const chartData = useMemo(() => {
     if (results.length === 0) return [];
     const maxLen = Math.max(...results.map(r => r.schedule.length));
@@ -21,50 +49,68 @@ export function ComparePanel({ results, names }: { results: LoanResult[]; names?
         const prefix = names?.[r.id || ''] ?? r.id ?? r.currency;
         const sched = r.schedule[i];
         if (sched) {
-          row[`${prefix} installment`] = Number(String(sched.installment).replace(/,/g, ''));
-          row[`${prefix} principal`] = Number(String(sched.principalPortion).replace(/,/g, ''));
-          row[`${prefix} interest`] = Number(String(sched.interestPortion).replace(/,/g, ''));
+          // Convert to base currency if specified and different from result currency
+          let installment = Number(String(sched.installment).replace(/,/g, ''));
+          let principal = Number(String(sched.principalPortion).replace(/,/g, ''));
+          let interest = Number(String(sched.interestPortion).replace(/,/g, ''));
+          
+          if (baseCurrency && r.currency !== baseCurrency) {
+            const fromCurrency = r.currency;
+            const toCurrency = baseCurrency;
+            installment = Number(convertCurrencyString(sched.installment, fromCurrency, toCurrency).replace(/,/g, ''));
+            principal = Number(convertCurrencyString(sched.principalPortion, fromCurrency, toCurrency).replace(/,/g, ''));
+            interest = Number(convertCurrencyString(sched.interestPortion, fromCurrency, toCurrency).replace(/,/g, ''));
+          }
+          
+          row[`${prefix} installment`] = installment;
+          row[`${prefix} principal`] = principal;
+          row[`${prefix} interest`] = interest;
         }
       }
       rows.push(row);
     }
     return rows;
-  }, [results, names]);
+  }, [results, names, baseCurrency]);
   if (results.length === 0) return null;
   return (
     <div className="space-y-5">
-      <div className="overflow-auto border border-neutral-200 rounded-lg shadow-soft">
-        <table className="min-w-full text-sm">
-        <thead className="bg-gradient-to-r from-primary-50 to-primary-100">
-          <tr>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-900 uppercase tracking-wider">{t.compare.templates}</th>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-900 uppercase tracking-wider">{t.templates.currency}</th>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-900 uppercase tracking-wider">{t.compare.totalPaid}</th>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-900 uppercase tracking-wider">{t.compare.totalInterest}</th>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-900 uppercase tracking-wider">{t.compare.payoffMonth}</th>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-900 uppercase tracking-wider">{t.compare.maxInstallment}</th>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-900 uppercase tracking-wider">{t.compare.minInstallment}</th>
-            <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-900 uppercase tracking-wider"></th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-neutral-200">
-          {results.map((r) => (
-            <tr key={r.id ?? r.currency} className="hover:bg-primary-50/50 transition-colors">
-              <td className="px-4 py-3 font-medium text-neutral-900">{names?.[r.id || ''] ?? r.id ?? '-'}</td>
-              <td className="px-4 py-3 text-neutral-700">{r.currency}</td>
-              <td className="px-4 py-3 text-neutral-700">{r.meta.totalPaid}</td>
-              <td className="px-4 py-3 text-neutral-700">{r.meta.totalInterest}</td>
-              <td className="px-4 py-3 text-neutral-700">{r.meta.payoffMonth}</td>
-              <td className="px-4 py-3 text-neutral-700">{r.meta.maxInstallment}</td>
-              <td className="px-4 py-3 text-neutral-700">{r.meta.minInstallment}</td>
-              <td className="px-4 py-3">
-                <button className="text-primary-600 hover:text-primary-700 font-medium text-xs hover:underline transition-colors" onClick={() => setSelected(r)}>{t.common.schedule}</button>
-              </td>
+      <TableContainer>
+        <Table>
+          <TableHeader>
+            <tr>
+              <TableHeaderCell>{t.compare.templates}</TableHeaderCell>
+              <TableHeaderCell>{t.templates.currency}</TableHeaderCell>
+              <TableHeaderCell>{t.compare.totalPaid}</TableHeaderCell>
+              <TableHeaderCell>{t.compare.totalInterest}</TableHeaderCell>
+              <TableHeaderCell>{t.compare.payoffMonth}</TableHeaderCell>
+              <TableHeaderCell>{t.compare.maxInstallment}</TableHeaderCell>
+              <TableHeaderCell>{t.compare.minInstallment}</TableHeaderCell>
+              <TableHeaderCell>{null}</TableHeaderCell>
             </tr>
-          ))}
-        </tbody>
-        </table>
-      </div>
+          </TableHeader>
+          <TableBody>
+            {results.map((r) => (
+              <TableRow key={r.id ?? r.currency}>
+                <TableCell variant="font-medium">{names?.[r.id || ''] ?? r.id ?? '-'}</TableCell>
+                <TableCell>{r.currency}</TableCell>
+                <TableCell>{r.meta.totalPaid}</TableCell>
+                <TableCell>{r.meta.totalInterest}</TableCell>
+                <TableCell>{r.meta.payoffMonth}</TableCell>
+                <TableCell>{r.meta.maxInstallment}</TableCell>
+                <TableCell>{r.meta.minInstallment}</TableCell>
+                <TableCell>
+                  <button 
+                    onClick={() => setSelected(r)}
+                    className="text-primary-600 hover:text-primary-700 font-medium text-xs hover:underline transition-colors"
+                  >
+                    {t.common.schedule}
+                  </button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
       <div className="space-y-3">
         <div className="flex items-center gap-4 text-sm border border-neutral-200 rounded-lg p-3 bg-neutral-50">
           <label className="flex items-center gap-2 cursor-pointer">
@@ -80,6 +126,65 @@ export function ComparePanel({ results, names }: { results: LoanResult[]; names?
             <span className="text-neutral-700 font-medium">{t.compare.interest}</span>
           </label>
         </div>
+        {baseCurrency && availableCurrencies && availableCurrencies.length > 1 && (
+          <div className="p-3 bg-primary-50 border border-primary-200 rounded-lg space-y-2">
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-primary-700 flex-1">
+                {t.compare.multiCurrencyGraphNote.replace('{currency}', baseCurrency)}
+              </span>
+              {onBaseCurrencyChange && (
+                <div className="flex items-center gap-2">
+                  <FormLabel className="mb-0 text-sm font-medium text-primary-900 whitespace-nowrap">
+                    {t.compare.baseCurrency}:
+                  </FormLabel>
+                  <Select
+                    options={availableCurrencies.map(c => ({ value: c, label: c }))}
+                    value={baseCurrency}
+                    onChange={(v) => onBaseCurrencyChange(Array.isArray(v) ? v[0] : v)}
+                    className="w-32"
+                  />
+                </div>
+              )}
+            </div>
+            {(() => {
+              // Get currencies that need conversion (different from base currency)
+              const currenciesToShow = availableCurrencies.filter(c => c !== baseCurrency);
+              if (currenciesToShow.length === 0) return null;
+              
+              const baseRate = exchangeRates[baseCurrency] ?? 1.0;
+              
+              return (
+                <div className="text-xs text-primary-600 pt-2 border-t border-primary-200">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <span className="font-medium text-primary-700">{t.compare.exchangeRates}: </span>
+                      {currenciesToShow.map((currency, idx) => {
+                        const rate = exchangeRates[currency] ?? 1.0;
+                        // Calculate conversion rate: 1 unit of currency = X units of baseCurrency
+                        const conversionRate = (rate / baseRate).toFixed(4);
+                        return (
+                          <span key={currency}>
+                            {idx > 0 && ', '}
+                            1 {currency} = {conversionRate} {baseCurrency}
+                          </span>
+                        );
+                      })}
+                    </div>
+                    <a
+                      href="https://www.exchangerate-api.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary-500 hover:text-primary-600 whitespace-nowrap transition-colors"
+                      title={t.compare.ratesByExchangeRateApiTitle}
+                    >
+                      {t.compare.ratesByExchangeRateApi}
+                    </a>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        )}
         <div className="h-80 w-full border border-neutral-200 rounded-lg bg-white p-4 shadow-soft">
           <ResponsiveContainer>
             <LineChart data={chartData} margin={{ left: 12, right: 12, top: 12, bottom: 12 }}>
@@ -109,15 +214,15 @@ export function ComparePanel({ results, names }: { results: LoanResult[]; names?
       </div>
 
       <Dialog open={!!selected} onClose={() => setSelected(null)} className="relative z-50">
-        <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="w-full max-w-4xl max-h-[80vh] overflow-auto rounded-lg bg-white p-6 shadow-large">
+        <ModalOverlay onClick={() => setSelected(null)} />
+        <ModalContainer onClick={() => setSelected(null)}>
+          <ModalPanel maxWidth="4xl" className="max-h-[80vh] overflow-auto p-6" onClose={() => setSelected(null)} closeLabel={t.common.close}>
             <Dialog.Title className="text-xl font-semibold text-neutral-900 mb-4">
               {t.common.schedule} - {selected && (names?.[selected.id || ''] ?? selected.id ?? selected.currency)}
             </Dialog.Title>
             {selected && <ScheduleTable result={selected} />}
-          </Dialog.Panel>
-        </div>
+          </ModalPanel>
+        </ModalContainer>
       </Dialog>
     </div>
   );

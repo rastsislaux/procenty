@@ -98,34 +98,6 @@ export const PRECONFIGURED_TEMPLATES: Template[] = [
     },
   },
   {
-    id: 'belarusbank-housing',
-    name: 'Belarusbank - Housing Loan',
-    nameI18n: {
-      ru: 'Беларусбанк - Кредит на жилье',
-      be: 'Беларусбанк - Крэдыт на жыллё',
-    },
-    description: 'Loan for acquisition or construction of housing through savings system',
-    descriptionI18n: {
-      ru: 'Кредит на приобретение или строительство жилья по системе стройсбережений',
-      be: 'Крэдыт на набыццё або будаўніцтва жылля па сістэме стройсбережений',
-    },
-    currency: 'BYN',
-    nominalAnnualRatePercent: 17.0,
-    termMonths: undefined,
-    amortization: 'Differentiated',
-    dayCount: 'Actual_365',
-    prepaymentPolicy: 'ReduceTerm',
-    prepaymentsAllowed: true,
-    allowFirstPayment: true,
-    bankUrl: 'https://www.asb.by',
-    loanUrl: 'https://myfin.by/bank/belarusbank/kredity/zhile',
-    constraints: {
-      termMonths: { type: 'enum', values: [120, 180, 240] },
-      principal: { type: 'range', min: 1000, step: 1 },
-      firstPaymentPercent: { type: 'range', min: 10, max: 50, step: 0.1 },
-    },
-  },
-  {
     id: 'belveb-ulasnaya-mayomasts',
     name: 'BelVEB Bank - Ulasnaya Mayomasts',
     nameI18n: {

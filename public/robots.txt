@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://procenty.rastsislaux.xyz/sitemap.xml
+
+# Disallow admin/internal paths if any
+Disallow: /api/

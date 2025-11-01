@@ -1,10 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { Template, PRECONFIGURED_TEMPLATES } from '../../config/loan-templates';
-import { loadTemplates, removeUserTemplate, upsertUserTemplate } from '../state/templatesStore';
+import { loadTemplates, removeUserTemplate, upsertUserTemplate, refreshDynamicTemplates } from '../state/templatesStore';
 import { Dialog } from '@headlessui/react';
 import { TemplateForm } from '../components/TemplateForm';
-import { IconButton } from '../components/IconButton';
+import { IconButton } from '../../shared/components/IconButton';
 import { useI18n } from '../../i18n/context';
+import { ModalOverlay, ModalContainer, ModalPanel } from '../../shared/components/Modal';
+import { EmptyState } from '../../shared/components/EmptyState';
+import { Button } from '../../shared/components/Button';
 import { getTemplateName, getTemplateDescription } from '../../i18n/utils';
 import { TemplateConditionsModal } from '../components/TemplateConditionsModal';
 
@@ -22,6 +25,7 @@ export function TemplatesPage({
   const [editing, setEditing] = useState<Template | null>(null);
   const [conditionsModalOpen, setConditionsModalOpen] = useState(false);
   const [selectedTemplateForConditions, setSelectedTemplateForConditions] = useState<Template | null>(null);
+  const [refreshingDynamic, setRefreshingDynamic] = useState(false);
   
   function toggleSelection(id: string) {
     if (selectedForComparison.includes(id)) {
@@ -53,6 +57,21 @@ export function TemplatesPage({
     setState({ ...state, user: next });
   }
 
+  async function handleRefreshDynamic() {
+    setRefreshingDynamic(true);
+    try {
+      const { templates, errors } = await refreshDynamicTemplates();
+      if (errors.length > 0) {
+        console.warn('Errors refreshing dynamic templates:', errors);
+      }
+      setState(loadTemplates());
+    } catch (error) {
+      console.error('Failed to refresh dynamic templates:', error);
+    } finally {
+      setRefreshingDynamic(false);
+    }
+  }
+
   const filteredUser = React.useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return state.user;
@@ -62,6 +81,16 @@ export function TemplatesPage({
     });
   }, [state.user, query, language]);
 
+  const allTemplates = useMemo(() => [...state.preconfigured, ...state.user, ...state.dynamic], [state]);
+
+  // Initial load of dynamic templates on mount
+  React.useEffect(() => {
+    if (state.dynamic.length === 0) {
+      handleRefreshDynamic();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const filteredPreconfigured = React.useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return state.preconfigured;
@@ -70,6 +99,15 @@ export function TemplatesPage({
       return name.toLowerCase().includes(q);
     });
   }, [state.preconfigured, query, language]);
+
+  const filteredDynamic = React.useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return state.dynamic;
+    return state.dynamic.filter((tpl) => {
+      const name = getTemplateName(tpl, language as any) || tpl.id;
+      return name.toLowerCase().includes(q);
+    });
+  }, [state.dynamic, query, language]);
 
   return (
     <div className="space-y-5 flex-1 overflow-y-auto overflow-x-hidden pr-2 min-h-0">
@@ -105,7 +143,9 @@ export function TemplatesPage({
         />
       </section>
       <section>
-        <h2 className="text-base font-semibold text-neutral-900 mb-3">{t.templates.preconfigured}</h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-base font-semibold text-neutral-900">{t.templates.preconfigured}</h2>
+        </div>
         <TemplateList 
           list={filteredPreconfigured} 
           onEdit={() => {}} 
@@ -120,19 +160,47 @@ export function TemplatesPage({
           }}
         />
       </section>
+      {state.dynamic.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold text-neutral-900">Кредиты из банков (API)</h2>
+            <Button 
+              variant="secondary" 
+              size="xs" 
+              onClick={handleRefreshDynamic}
+              disabled={refreshingDynamic}
+            >
+              {refreshingDynamic ? 'Обновление...' : 'Обновить'}
+            </Button>
+          </div>
+          <TemplateList 
+            list={filteredDynamic} 
+            onEdit={() => {}} 
+            editable={false} 
+            language={language} 
+            t={t}
+            selectedForComparison={selectedForComparison}
+            onToggleSelection={toggleSelection}
+            onShowConditions={(t) => {
+              setSelectedTemplateForConditions(t);
+              setConditionsModalOpen(true);
+            }}
+          />
+        </section>
+      )}
 
       <Dialog open={open} onClose={() => setOpen(false)} className="relative z-50">
-        <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-large">
+        <ModalOverlay onClick={() => setOpen(false)} />
+        <ModalContainer onClick={() => setOpen(false)}>
+          <ModalPanel maxWidth="2xl" className="p-6" onClose={() => setOpen(false)} closeLabel={t.common.close}>
             <Dialog.Title className="text-xl font-semibold text-neutral-900 mb-4">{editing?.id?.startsWith('user-') ? t.templates.createTemplate : t.templates.editTemplate}</Dialog.Title>
             {editing && (
               <div className="mt-4">
                 <TemplateForm value={editing} onChange={setEditing as any} onSubmit={() => save(editing)} />
               </div>
             )}
-          </Dialog.Panel>
-        </div>
+          </ModalPanel>
+        </ModalContainer>
       </Dialog>
 
       <TemplateConditionsModal
@@ -168,7 +236,7 @@ function TemplateList({
   onToggleSelection: (id: string) => void;
   onShowConditions?: (t: Template) => void;
 }) {
-  if (list.length === 0) return <div className="text-sm text-neutral-500 bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-3">{t.templates.noTemplates}</div>;
+  if (list.length === 0) return <EmptyState message={t.templates.noTemplates} />;
   return (
     <div className="grid grid-cols-1 gap-3">
       {list.map((template) => (
@@ -190,19 +258,20 @@ function TemplateList({
           </div>
           <div className="mt-3 flex items-center gap-2 flex-wrap">
             {onShowConditions && (
-              <button 
+              <Button 
+                variant="primary-outline"
+                size="xs"
                 onClick={() => onShowConditions(template)}
-                className="px-3 py-1.5 rounded-lg border border-primary-300 bg-primary-50 text-xs font-medium text-primary-700 whitespace-nowrap shadow-soft hover:bg-primary-100 hover:shadow-medium transition-all duration-200"
               >
                 {language === 'ru' ? 'Условия кредита' : language === 'be' ? 'Умовы крэдыта' : 'Loan Terms'}
-              </button>
+              </Button>
             )}
-            {editable ? (
+            {editable && (
               <>
-                <button className="px-3 py-1.5 rounded-lg border border-neutral-300 bg-white text-xs font-medium text-neutral-700 whitespace-nowrap shadow-soft hover:bg-neutral-50 hover:shadow-medium transition-all duration-200" onClick={() => onEdit(template)}>{t.common.edit}</button>
-                {onDelete && <button className="px-3 py-1.5 rounded-lg border border-red-300 bg-white text-xs font-medium text-red-700 whitespace-nowrap shadow-soft hover:bg-red-50 hover:shadow-medium transition-all duration-200" onClick={() => onDelete(template.id)}>{t.common.delete}</button>}
+                <Button variant="secondary" size="xs" onClick={() => onEdit(template)}>{t.common.edit}</Button>
+                {onDelete && <Button variant="danger-outline" size="xs" onClick={() => onDelete(template.id)}>{t.common.delete}</Button>}
               </>
-            ) : <></>}
+            )}
           </div>
         </div>
       ))}

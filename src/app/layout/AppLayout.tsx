@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { YandexAd } from '../../loan-ui/components/YandexAd';
 import { useI18n } from '../../i18n/context';
 import { LanguageSelector } from '../../i18n/LanguageSelector';
 
@@ -20,13 +19,7 @@ function RouteFade({ children }: { children: React.ReactNode }) {
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const { t } = useI18n();
   const { pathname } = useLocation();
-  const showAds = pathname !== '/';
-  const [adHasError, setAdHasError] = React.useState(false);
-
-  // Reset error state when route changes to allow retry
-  React.useEffect(() => {
-    setAdHasError(false);
-  }, [pathname]);
+  
   return (
     <div className="min-h-screen flex flex-col bg-neutral-50">
       <header className="border-b border-neutral-200 bg-white shadow-soft">
@@ -45,36 +38,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </header>
-      <main className="flex-1 bg-gradient-to-b from-neutral-50 to-neutral-100">
+      <main className="flex-1 bg-gradient-to-b from-neutral-50 to-neutral-100 relative">
         <div className="full-width px-4 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {showAds && (
-              <aside 
-                className={`lg:col-span-2 ${adHasError ? 'hidden' : 'hidden lg:block'}`}
-                style={{ display: adHasError ? 'none' : undefined }}
-              >
-                <div className="sticky top-8">
-                  <YandexAd 
-                    blockId="R-A-17605551-1" 
-                    id="yandex_rtb_R-A-17605551-2"
-                    onError={setAdHasError}
-                  />
-                </div>
-              </aside>
-            )}
-
-            {/* Main content - use style to handle width change without remounting */}
-            <div 
-              className="lg:col-span-12 flex flex-col min-h-0"
-              style={{
-                gridColumn: showAds && !adHasError ? 'span 10 / span 10' : 'span 12 / span 12'
-              }}
-            >
-              <RouteFade key={pathname}>
-                {children}
-              </RouteFade>
-            </div>
-          </div>
+          <RouteFade key={pathname}>
+            {children}
+          </RouteFade>
         </div>
       </main>
       <footer className="border-t border-neutral-200 bg-white shadow-soft">
