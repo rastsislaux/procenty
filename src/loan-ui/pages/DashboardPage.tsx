@@ -5,6 +5,8 @@ import { YandexAd } from '../../shared/components/YandexAd';
 import { SEO } from '../../shared/components/SEO';
 import { useI18n } from '../../i18n/context';
 import { loadAppState, saveAppState } from '../state/appStateStore';
+import { MobileDrawer } from '../../shared/components/MobileDrawer';
+import { Button } from '../../shared/components/Button';
 
 export function DashboardPage() {
   const { t } = useI18n();
@@ -13,6 +15,7 @@ export function DashboardPage() {
     return loadAppState().selectedTemplateIds;
   });
   const [adHasError, setAdHasError] = useState(false);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
   // Reset error state when component mounts
   useEffect(() => {
@@ -35,7 +38,7 @@ export function DashboardPage() {
         description={t.seo.appDescription}
         keywords={t.seo.appKeywords}
       />
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
+    <div className="w-full lg:grid lg:grid-cols-12 lg:gap-6 h-full">
       {/* Yandex Ad sidebar */}
       {!adHasError && (
         <aside className="lg:col-span-2 hidden lg:block">
@@ -51,22 +54,48 @@ export function DashboardPage() {
       
       {/* Main content */}
       <div 
-        className="lg:col-span-12 flex flex-col min-h-0"
+        className="w-full lg:col-span-12 flex flex-col min-h-0"
         style={{
           gridColumn: !adHasError ? 'span 10 / span 10' : 'span 12 / span 12'
         }}
       >
-        <div className="flex flex-col lg:flex-row gap-4 h-full">
-          <main className="lg:w-[75%] w-full">
+        <div className="flex flex-col lg:flex-row gap-2 sm:gap-4 h-full">
+          <main className="w-full lg:w-[75%]">
+            {/* Mobile button to open templates drawer */}
+            <div className="lg:hidden mb-3">
+              <Button
+                variant="primary-outline"
+                size="sm"
+                onClick={() => setMobileDrawerOpen(true)}
+                className="w-full"
+              >
+                {t.templates.title || 'Templates'} ({selectedForComparison.length})
+              </Button>
+            </div>
             <ComparePage selectedTemplateIds={selectedForComparison} />
           </main>
-          <aside className="lg:w-[25%] w-full flex flex-col min-h-0">
+          {/* Desktop sidebar */}
+          <aside className="hidden lg:block w-full lg:w-[25%] flex flex-col min-h-0">
             <TemplatesPage 
               selectedForComparison={selectedForComparison}
               onSelectionChange={setSelectedForComparison}
             />
           </aside>
         </div>
+        
+        {/* Mobile drawer for templates */}
+        <MobileDrawer
+          isOpen={mobileDrawerOpen}
+          onClose={() => setMobileDrawerOpen(false)}
+          title={t.templates.title || 'Templates'}
+        >
+          <TemplatesPage 
+            selectedForComparison={selectedForComparison}
+            onSelectionChange={(ids) => {
+              setSelectedForComparison(ids);
+            }}
+          />
+        </MobileDrawer>
       </div>
     </div>
     </>

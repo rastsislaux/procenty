@@ -32,5 +32,24 @@
   .card-hover {
     @apply card-base hover:shadow-card-hover;
   }
+  
+  .full-width {
+    @apply w-full;
+  }
+}
+
+@layer utilities {
+  /* Mobile-specific font size reductions */
+  @media (max-width: 768px) {
+    .mobile-text-xs {
+      @apply text-xs;
+    }
+    .mobile-text-sm {
+      @apply text-sm;
+    }
+    .mobile-text-base {
+      @apply text-base;
+    }
+  }
 }
 

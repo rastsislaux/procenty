@@ -58,7 +58,7 @@ export const translations: Record<Language, Translations> = {
     },
     header: {
       title: 'Procenty',
-      contact: 'Contact us (Google Forms)',
+      contact: 'Contact us',
     },
     footer: {
       rights: '© {from} - {to} Rostislav Lipski. All rights reserved.',
@@ -259,7 +259,7 @@ export const translations: Record<Language, Translations> = {
     },
     header: {
       title: 'Проценты',
-      contact: 'Связаться с нами (Google Формы)',
+      contact: 'Связаться с нами',
     },
     footer: {
       rights: '© {from} - {to} Ростислав Липский. Все права защищены.',
@@ -460,7 +460,7 @@ export const translations: Record<Language, Translations> = {
     },
     header: {
       title: 'Працэнты',
-      contact: 'Кантакт з намі (Google Формы)',
+      contact: 'Кантакт з намi',
     },
     footer: {
       rights: '© {from} - {to} Ростыслаў Ліпскі. Усе правы абаронены.',

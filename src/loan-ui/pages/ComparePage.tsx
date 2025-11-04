@@ -35,7 +35,15 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
   const [inputs, setInputs] = useState<Record<string, PerTemplateInputs>>(appState.inputs || {});
   const [results, setResults] = useState<LoanResult[]>([]);
   const [errors, setErrors] = useState<Record<string, string[]>>({});
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(appState.collapsed || {});
+  // Start with all accordions closed by default (don't load collapsed state from localStorage)
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
+    // Initialize all templates as collapsed (closed)
+    const initial: Record<string, boolean> = {};
+    selectedTemplateIds.forEach(id => {
+      initial[id] = true;
+    });
+    return initial;
+  });
   const [conditionsModalOpen, setConditionsModalOpen] = useState(false);
   const [selectedTemplateForConditions, setSelectedTemplateForConditions] = useState<Template | null>(null);
   const nameMap = useMemo(() => Object.fromEntries(all.map(t => [t.id, getTemplateName(t, language) || t.id])), [all, language]);
@@ -71,14 +79,7 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
     };
   }, [inputs]);
   
-  // Save collapsed state to localStorage
-  useEffect(() => {
-    const currentState = loadAppState();
-    saveAppState({
-      ...currentState,
-      collapsed,
-    });
-  }, [collapsed]);
+  // Don't save collapsed state - accordions should always start closed by default
   
   // Save base currency to localStorage
   useEffect(() => {
@@ -121,6 +122,16 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
   useEffect(() => {
     selected.forEach(t => {
       ensureInputFor(t);
+    });
+    // Initialize collapsed state for new templates (all closed by default)
+    setCollapsed(prev => {
+      const next = { ...prev };
+      selected.forEach(t => {
+        if (!(t.id in next)) {
+          next[t.id] = true; // Closed by default
+        }
+      });
+      return next;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected]);
@@ -212,12 +223,12 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
   }, [selected, inputs]);
 
   return (
-    <div className="space-y-6">
-      <div className="card-base p-5">
+    <div className="space-y-3 sm:space-y-6">
+      <div className="card-base p-3 sm:p-5">
           {selected.length > 0 ? (
             <>
               {results.length > 0 && (
-                <div className="mb-6">
+                <div className="mb-4 sm:mb-6">
                   <ComparePanelWithFade 
                     results={results} 
                     names={nameMap} 
@@ -227,15 +238,15 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
                   />
                 </div>
               )}
-              <div className="mb-4 text-sm font-medium text-neutral-700 bg-primary-50 border border-primary-200 rounded-lg px-4 py-2.5">
+              <div className="mb-3 sm:mb-4 text-xs sm:text-sm font-medium text-neutral-700 bg-primary-50 border border-primary-200 rounded-lg px-2 sm:px-4 py-2 sm:py-2.5">
                 <span className="text-primary-900">{t.compare.title}:</span> <span className="text-primary-700">{selected.map(t => getTemplateName(t, language) || t.id).join(', ')}</span>
               </div>
-              <div className="mt-4 space-y-4">
+              <div className="mt-3 sm:mt-4 space-y-3 sm:space-y-4">
               {selected.map((template) => (
-                <div key={template.id} className="card-base p-4 border-l-4 border-l-primary-500">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <h3 className="text-base font-semibold text-neutral-900">{getTemplateName(template, language) || template.id}</h3>
+                <div key={template.id} className="card-base p-3 sm:p-4 border-l-4 border-l-primary-500">
+                  <div className="flex items-center justify-between mb-2 sm:mb-3">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                      <h3 className="text-sm sm:text-base font-semibold text-neutral-900 truncate">{getTemplateName(template, language) || template.id}</h3>
                       <Button
                         variant="primary-outline"
                         size="xs"
@@ -261,7 +272,22 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
                     <IconButton
                       label={collapsed[template.id] ? 'Expand' : 'Collapse'}
                       title={collapsed[template.id] ? 'Expand' : 'Collapse'}
-                      onClick={() => setCollapsed(prev => ({ ...prev, [template.id]: !prev[template.id] }))}
+                      onClick={() => {
+                        setCollapsed(prev => {
+                          const isCurrentlyOpen = !prev[template.id];
+                          if (isCurrentlyOpen) {
+                            // If currently open, just close this one
+                            return { ...prev, [template.id]: true };
+                          } else {
+                            // If currently closed, close all others and open this one
+                            const next: Record<string, boolean> = {};
+                            selected.forEach(t => {
+                              next[t.id] = t.id === template.id ? false : true;
+                            });
+                            return next;
+                          }
+                        });
+                      }}
                       className="w-8 h-8"
                     >
                       <svg
@@ -280,49 +306,49 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
                   </div>
                   <div className={`overflow-hidden transition-[max-height,opacity] duration-[250ms] ${collapsed[template.id] ? 'max-h-0 opacity-0' : 'max-h-[2000px] opacity-100'}`}>
                   {/* Main loan parameters - compact horizontal layout */}
-                  <div className="flex flex-wrap items-end gap-3">
+                  <div className="flex flex-wrap items-end gap-2 sm:gap-3">
                     <div className="flex-shrink-0">
-                      <label className="block text-xs font-medium text-neutral-700 mb-1.5">{t.calculator.principal}</label>
+                      <label className="block text-xs font-medium text-neutral-700 mb-1">{t.calculator.principal}</label>
                       <div className="relative inline-flex items-center">
-                        <input className="input-base w-32 pr-10" value={inputs[template.id]?.principal ?? '20000'} onChange={(e) => updateInput(template.id, { principal: e.target.value })} />
-                        <span className="absolute right-3 text-sm text-neutral-500 pointer-events-none">{template.currency}</span>
+                        <input className="input-base w-24 sm:w-32 pr-8 sm:pr-10 text-xs sm:text-sm" value={inputs[template.id]?.principal ?? '20000'} onChange={(e) => updateInput(template.id, { principal: e.target.value })} />
+                        <span className="absolute right-2 sm:right-3 text-xs sm:text-sm text-neutral-500 pointer-events-none">{template.currency}</span>
                       </div>
                     </div>
                     {template.nominalAnnualRatePercent == null && (
                       <div className="flex-shrink-0">
-                        <label className="block text-xs font-medium text-neutral-700 mb-1.5">{t.calculator.rate}</label>
+                        <label className="block text-xs font-medium text-neutral-700 mb-1">{t.calculator.rate}</label>
                         <ConstrainedNumberInput
                           value={inputs[template.id]?.rate}
                           onChange={(rate) => updateInput(template.id, { rate })}
                           constraint={template.constraints?.nominalAnnualRatePercent}
                           step={0.01}
-                          className="w-24"
+                          className="w-20 sm:w-24"
                           unit="%"
                         />
                       </div>
                     )}
                     {template.termMonths == null && (
                       <div className="flex-shrink-0">
-                        <label className="block text-xs font-medium text-neutral-700 mb-1.5">{t.calculator.termMonths}</label>
+                        <label className="block text-xs font-medium text-neutral-700 mb-1">{t.calculator.termMonths}</label>
                         <ConstrainedNumberInput
                           value={inputs[template.id]?.term}
                           onChange={(term) => updateInput(template.id, { term })}
                           constraint={template.constraints?.termMonths}
                           step={1}
-                          className="w-20"
+                          className="w-16 sm:w-20"
                           unit={language === 'ru' ? 'мес.' : language === 'be' ? 'мес.' : 'months'}
                         />
                       </div>
                     )}
                     {template.grace && template.grace.type === 'ReducedRate' && template.grace.reducedAnnualRatePercent == null && (
                       <div className="flex-shrink-0">
-                        <label className="block text-xs font-medium text-neutral-700 mb-1.5">{t.templates.reducedRate}</label>
+                        <label className="block text-xs font-medium text-neutral-700 mb-1">{t.templates.reducedRate}</label>
                         <ConstrainedNumberInput
                           value={inputs[template.id]?.graceReducedRatePercent}
                           onChange={(v) => updateInput(template.id, { graceReducedRatePercent: v })}
                           constraint={template.constraints?.graceReducedAnnualRatePercent}
                           step={0.01}
-                          className="w-24"
+                          className="w-20 sm:w-24"
                           unit="%"
                         />
                       </div>
@@ -331,13 +357,13 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
                   
                   {/* First payment - inline with main params */}
                   {template.allowFirstPayment && (
-                    <div className="flex flex-wrap items-end gap-3 mt-3 pt-3 border-t border-neutral-200">
+                    <div className="flex flex-wrap items-end gap-2 sm:gap-3 mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-neutral-200">
                       <div className="flex-shrink-0">
-                        <label className="block text-xs font-medium text-neutral-700 mb-1.5">{t.calculator.firstPaymentType}</label>
-                        <Select className="w-32" options={[{ value: 'Percent', label: t.fields.percent }, { value: 'Absolute', label: t.fields.absolute }]} value={inputs[template.id]?.firstPayment?.type ?? 'Percent'} onChange={(v) => updateInput(template.id, { firstPayment: { ...(inputs[template.id]?.firstPayment ?? { value: 0 }), type: v as any } })} />
+                        <label className="block text-xs font-medium text-neutral-700 mb-1">{t.calculator.firstPaymentType}</label>
+                        <Select className="w-28 sm:w-32" options={[{ value: 'Percent', label: t.fields.percent }, { value: 'Absolute', label: t.fields.absolute }]} value={inputs[template.id]?.firstPayment?.type ?? 'Percent'} onChange={(v) => updateInput(template.id, { firstPayment: { ...(inputs[template.id]?.firstPayment ?? { value: 0 }), type: v as any } })} />
                       </div>
                       <div className="flex-shrink-0">
-                        <label className="block text-xs font-medium text-neutral-700 mb-1.5">{t.calculator.firstPaymentValue}</label>
+                        <label className="block text-xs font-medium text-neutral-700 mb-1">{t.calculator.firstPaymentValue}</label>
                         {(() => {
                           const firstPaymentType = inputs[template.id]?.firstPayment?.type ?? 'Percent';
                           const isPercent = firstPaymentType === 'Percent';
@@ -351,7 +377,7 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
                                   : template.constraints?.firstPaymentAbsolute
                               }
                               step={isPercent ? 0.1 : 1}
-                              className={isPercent ? 'w-24' : 'w-32'}
+                              className={isPercent ? 'w-20 sm:w-24' : 'w-28 sm:w-32'}
                               unit={isPercent ? '%' : template.currency}
                               allowEmpty={true}
                             />
@@ -363,7 +389,7 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
                   
                   {/* Prepayments - full width section */}
                   {template.prepaymentsAllowed && (
-                    <div className="mt-3 pt-3 border-t border-neutral-200">
+                    <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-neutral-200">
                       <PrepaymentEditor
                         events={inputs[template.id]?.prepayments ?? []}
                         onChange={(ev) => updateInput(template.id, { prepayments: ev })}

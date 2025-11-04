@@ -51,7 +51,7 @@ export function TableHeaderCell({
   children: React.ReactNode;
 }) {
   return (
-    <th className={clsx('px-4 py-3 text-left text-xs font-semibold text-neutral-900 uppercase tracking-wider', className)}>
+    <th className={clsx('px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-semibold text-neutral-900 uppercase tracking-wider', className)}>
       {children}
     </th>
   );
@@ -96,7 +96,7 @@ export function TableCell({
   children,
   variant = 'default'
 }: TableCellProps) {
-  const baseClasses = 'px-4 py-3';
+  const baseClasses = 'px-2 sm:px-4 py-1.5 sm:py-3';
   const variantClasses = 
     variant === 'font-medium' 
       ? 'font-medium text-neutral-900' 

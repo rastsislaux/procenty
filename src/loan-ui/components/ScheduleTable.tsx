@@ -29,7 +29,7 @@ export function ScheduleTable({ result }: { result: LoanResult }) {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2 sm:space-y-3">
       <div className="flex justify-end">
         <Button variant="secondary" size="xs" onClick={handleExportCSV}>
           {t.schedule.exportCSV}
@@ -49,11 +49,11 @@ export function ScheduleTable({ result }: { result: LoanResult }) {
           <TableBody>
             {result.schedule.map((r) => (
               <TableRow key={r.monthIndex}>
-                <TableCell variant="font-medium">{r.monthIndex}</TableCell>
-                <TableCell>{r.installment}</TableCell>
-                <TableCell>{r.interestPortion}</TableCell>
-                <TableCell>{r.principalPortion}</TableCell>
-                <TableCell>{r.remainingPrincipal}</TableCell>
+                <TableCell variant="font-medium" className="text-xs sm:text-sm">{r.monthIndex}</TableCell>
+                <TableCell className="text-xs sm:text-sm">{r.installment}</TableCell>
+                <TableCell className="text-xs sm:text-sm">{r.interestPortion}</TableCell>
+                <TableCell className="text-xs sm:text-sm">{r.principalPortion}</TableCell>
+                <TableCell className="text-xs sm:text-sm">{r.remainingPrincipal}</TableCell>
               </TableRow>
             ))}
           </TableBody>
