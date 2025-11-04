@@ -20,12 +20,12 @@ export function TemplateForm({ value, onChange, onSubmit }: Props) {
   const { t } = useI18n();
   const [openGrace, setOpenGrace] = useState(!!value.grace);
   return (
-    <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); onSubmit?.(); }}>
+    <form className="space-y-3 sm:space-y-4" onSubmit={(e) => { e.preventDefault(); onSubmit?.(); }}>
       <LoanBasicsSection value={value} onChange={onChange} />
       <GraceSection value={value} open={openGrace} onToggle={setOpenGrace} onChange={onChange} />
       <FlagsSection value={value} onChange={onChange} />
       <div className="pt-2">
-        <Button type="submit">{t.common.save}</Button>
+        <Button type="submit" className="w-full sm:w-auto">{t.common.save}</Button>
       </div>
     </form>
   );

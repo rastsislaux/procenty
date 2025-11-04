@@ -140,6 +140,7 @@ export const translations: Record<Language, Translations> = {
     exchangeRates: 'Exchange rates',
     ratesByExchangeRateApi: 'Rates by Exchange Rate API',
     ratesByExchangeRateApiTitle: 'Exchange rates provided by Exchange Rate API',
+    viewDetails: 'Details',
   },
     schedule: {
       month: 'Month',
@@ -341,6 +342,7 @@ export const translations: Record<Language, Translations> = {
     exchangeRates: 'Курсы валют',
     ratesByExchangeRateApi: 'Курсы от Exchange Rate API',
     ratesByExchangeRateApiTitle: 'Курсы валют предоставлены Exchange Rate API',
+    viewDetails: 'Подробнее',
   },
     schedule: {
       month: 'Месяц',
@@ -542,6 +544,7 @@ export const translations: Record<Language, Translations> = {
     exchangeRates: 'Курсы валют',
     ratesByExchangeRateApi: 'Курсы ад Exchange Rate API',
     ratesByExchangeRateApiTitle: 'Курсы валют прадастаўлены Exchange Rate API',
+    viewDetails: 'Падробнее',
   },
     schedule: {
       month: 'Месяц',

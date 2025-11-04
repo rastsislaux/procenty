@@ -24,7 +24,20 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen flex flex-col bg-neutral-50">
       <header className="border-b border-neutral-200 bg-white shadow-soft">
         <div className="w-full max-w-screen-2xl mx-auto px-2 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
-          <Link to="/" className="text-base sm:text-xl font-bold text-primary-700 hover:text-primary-800 transition-colors">{t.header.title}</Link>
+          <Link 
+            to="/" 
+            onClick={() => {
+              // Mark that user intentionally navigated to home page
+              try {
+                sessionStorage.setItem('procenty.intentionalHomeNav', 'true');
+              } catch (e) {
+                // Ignore if sessionStorage is not available
+              }
+            }}
+            className="text-base sm:text-xl font-bold text-primary-700 hover:text-primary-800 transition-colors"
+          >
+            {t.header.title}
+          </Link>
           <div className="flex items-center gap-3">
             <a
               href="https://forms.gle/piPyucb3iox7FdgZA"

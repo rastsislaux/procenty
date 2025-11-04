@@ -135,7 +135,7 @@ export function ComparePanel({
                   onClick={() => setSelectedForDetails(r)}
                   className="flex-shrink-0"
                 >
-                  {'View Details'}
+                  {t.compare.viewDetails}
                 </Button>
               </div>
             </div>
@@ -229,8 +229,16 @@ export function ComparePanel({
                 style={{ fontSize: '10px' }}
               />
               <Tooltip 
-                contentStyle={{ fontSize: '11px', padding: '6px' }}
-                labelStyle={{ fontSize: '11px' }}
+                contentStyle={{ 
+                  fontSize: '10px', 
+                  padding: '4px 6px',
+                  maxWidth: '70vw',
+                  wordWrap: 'break-word',
+                  whiteSpace: 'normal',
+                  lineHeight: '1.3'
+                }}
+                labelStyle={{ fontSize: '10px', wordWrap: 'break-word', marginBottom: '2px' }}
+                wrapperStyle={{ maxWidth: '85vw' }}
               />
               <Legend 
                 wrapperStyle={{ fontSize: '10px', paddingTop: '8px' }}
@@ -242,13 +250,13 @@ export function ComparePanel({
                 const baseColor = colors[idx % colors.length];
                 const lines = [];
                 if (showInstallment) {
-                  lines.push(<Line key={`${prefix}-installment`} type="monotone" dataKey={`${prefix} installment`} stroke={baseColor} dot={false} name={`${prefix} - Installment`} strokeDasharray="5 5" strokeWidth={1.5} />);
+                  lines.push(<Line key={`${prefix}-installment`} type="monotone" dataKey={`${prefix} installment`} stroke={baseColor} dot={false} name={`${prefix} - ${t.compare.installment}`} strokeDasharray="5 5" strokeWidth={1.5} />);
                 }
                 if (showPrincipal) {
-                  lines.push(<Line key={`${prefix}-principal`} type="monotone" dataKey={`${prefix} principal`} stroke={baseColor} dot={false} name={`${prefix} - Principal`} strokeWidth={1.5} />);
+                  lines.push(<Line key={`${prefix}-principal`} type="monotone" dataKey={`${prefix} principal`} stroke={baseColor} dot={false} name={`${prefix} - ${t.compare.principal}`} strokeWidth={1.5} />);
                 }
                 if (showInterest) {
-                  lines.push(<Line key={`${prefix}-interest`} type="monotone" dataKey={`${prefix} interest`} stroke={baseColor} dot={false} name={`${prefix} - Interest`} strokeDasharray="3 3" strokeWidth={1.5} />);
+                  lines.push(<Line key={`${prefix}-interest`} type="monotone" dataKey={`${prefix} interest`} stroke={baseColor} dot={false} name={`${prefix} - ${t.compare.interest}`} strokeDasharray="3 3" strokeWidth={1.5} />);
                 }
                 return lines;
               })}

@@ -139,6 +139,7 @@ export interface Translations {
     exchangeRates: string;
     ratesByExchangeRateApi: string;
     ratesByExchangeRateApiTitle: string;
+    viewDetails: string;
   };
   schedule: {
     month: string;
