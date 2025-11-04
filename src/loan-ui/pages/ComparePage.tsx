@@ -19,6 +19,7 @@ import { Badge } from '../../shared/components/Badge';
 import { Button } from '../../shared/components/Button';
 import { convertCurrencyString, getAvailableCurrencies } from '../../shared/utils/currencyConverter';
 import { FormLabel } from '../../shared/components/FormLabel';
+import { loadAppState, saveAppState, PerTemplateInputs } from '../state/appStateStore';
 
 // extracted subcomponents imported above
 
@@ -28,11 +29,13 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
   const state = useMemo(() => loadTemplates(), []);
   const all = useMemo(() => [...state.preconfigured, ...state.user, ...state.dynamic], [state]);
   const selected = useMemo(() => all.filter(t => selectedTemplateIds.includes(t.id)), [all, selectedTemplateIds]);
-  type PerTemplateInputs = { principal: string; rate?: number; term?: number; firstPayment?: FirstPaymentConfig; prepayments?: any[]; graceReducedRatePercent?: number; graceMonths?: number };
-  const [inputs, setInputs] = useState<Record<string, PerTemplateInputs>>({});
+  
+  // Load initial state from localStorage
+  const appState = useMemo(() => loadAppState(), []);
+  const [inputs, setInputs] = useState<Record<string, PerTemplateInputs>>(appState.inputs || {});
   const [results, setResults] = useState<LoanResult[]>([]);
   const [errors, setErrors] = useState<Record<string, string[]>>({});
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(appState.collapsed || {});
   const [conditionsModalOpen, setConditionsModalOpen] = useState(false);
   const [selectedTemplateForConditions, setSelectedTemplateForConditions] = useState<Template | null>(null);
   const nameMap = useMemo(() => Object.fromEntries(all.map(t => [t.id, getTemplateName(t, language) || t.id])), [all, language]);
@@ -45,8 +48,46 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
   
   const hasMultipleCurrencies = currenciesInResults.length > 1;
   
-  // Base currency selector - default to USD, will update when results are available
-  const [baseCurrency, setBaseCurrency] = useState<string>('USD');
+  // Base currency selector - load from localStorage, default to USD
+  const [baseCurrency, setBaseCurrency] = useState<string>(appState.baseCurrency || 'USD');
+  
+  // Save inputs to localStorage with debouncing
+  const saveInputsTimer = useRef<number | null>(null);
+  useEffect(() => {
+    if (saveInputsTimer.current) {
+      clearTimeout(saveInputsTimer.current);
+    }
+    saveInputsTimer.current = window.setTimeout(() => {
+      const currentState = loadAppState();
+      saveAppState({
+        ...currentState,
+        inputs,
+      });
+    }, 500);
+    return () => {
+      if (saveInputsTimer.current) {
+        clearTimeout(saveInputsTimer.current);
+      }
+    };
+  }, [inputs]);
+  
+  // Save collapsed state to localStorage
+  useEffect(() => {
+    const currentState = loadAppState();
+    saveAppState({
+      ...currentState,
+      collapsed,
+    });
+  }, [collapsed]);
+  
+  // Save base currency to localStorage
+  useEffect(() => {
+    const currentState = loadAppState();
+    saveAppState({
+      ...currentState,
+      baseCurrency,
+    });
+  }, [baseCurrency]);
   
   // Update base currency when currencies change
   useEffect(() => {

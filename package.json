@@ -9,6 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "generate-seo": "node scripts/generate-static-seo.js",
+    "download-belarusbank-data": "node scripts/download-belarusbank-data.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest",
     "lint": "eslint --ext .ts,.tsx src",

@@ -4,16 +4,29 @@ import { ComparePage } from './ComparePage';
 import { YandexAd } from '../../shared/components/YandexAd';
 import { SEO } from '../../shared/components/SEO';
 import { useI18n } from '../../i18n/context';
+import { loadAppState, saveAppState } from '../state/appStateStore';
 
 export function DashboardPage() {
   const { t } = useI18n();
-  const [selectedForComparison, setSelectedForComparison] = useState<string[]>([]);
+  const [selectedForComparison, setSelectedForComparison] = useState<string[]>(() => {
+    // Load initial state from localStorage
+    return loadAppState().selectedTemplateIds;
+  });
   const [adHasError, setAdHasError] = useState(false);
 
   // Reset error state when component mounts
   useEffect(() => {
     setAdHasError(false);
   }, []);
+
+  // Save selected templates to localStorage whenever they change
+  useEffect(() => {
+    const currentState = loadAppState();
+    saveAppState({
+      ...currentState,
+      selectedTemplateIds: selectedForComparison,
+    });
+  }, [selectedForComparison]);
 
   return (
     <>

@@ -16,30 +16,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         
-      - name: Fetch Belarusbank API data
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Fetch Belarusbank Open Banking API data
         id: fetch-data
-        run: |
-          echo "Fetching data from Belarusbank API..."
-          
-          # Fetch data from API
-          response=$(curl -s "https://belarusbank.by/api/kredits_info" || echo "")
-          
-          if [ -z "$response" ]; then
-            echo "❌ Failed to fetch data from API"
-            exit 1
-          fi
-          
-          # Check if response is valid JSON
-          if echo "$response" | jq empty 2>/dev/null; then
-            items_count=$(echo "$response" | jq 'length')
-            echo "✅ Successfully fetched and validated data: $items_count items"
-            echo "$response" > public/data/belarusbank-loans.json
-            echo "items_count=$items_count" >> $GITHUB_OUTPUT
-          else
-            echo "❌ Invalid JSON response"
-            echo "Response preview: ${response:0:200}"
-            exit 1
-          fi
+        run: npm run download-belarusbank-data
         continue-on-error: false
         
       - name: Commit and push changes
@@ -47,11 +35,11 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add public/data/belarusbank-loans.json
+          git add public/data/belarusbank-open-banking-loans.json
           
           # Only commit if there are changes
           if ! git diff --staged --quiet; then
-            git commit -m "Update Belarusbank loan data [skip ci]" || exit 0
+            git commit -m "Update Belarusbank Open Banking loan data [skip ci]" || exit 0
             git push
             echo "✅ Successfully committed and pushed updated data"
           else

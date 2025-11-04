@@ -29,11 +29,23 @@ export function Select<T>({ options, value, onChange, multiple, placeholder, cla
             anchor="bottom start"
             className="z-50 mt-1 max-h-60 w-[var(--anchor-width)] overflow-auto rounded-lg bg-white py-1 shadow-large ring-1 ring-neutral-200 focus:outline-none"
           >
-            {options.map((opt, idx) => (
-              <Listbox.Option key={idx} value={opt.value} className={({ active }) => `cursor-pointer select-none px-3 py-2.5 text-sm transition-colors ${active ? 'bg-primary-50 text-primary-900' : 'text-neutral-900'}`}>
-                {opt.label}
-              </Listbox.Option>
-            ))}
+            {options.map((opt, idx) => {
+              // Check if label contains a comment in format "value (comment)"
+              const commentMatch = opt.label.match(/^(.+?)\s*\((.+?)\)$/);
+              const mainLabel = commentMatch ? commentMatch[1] : opt.label;
+              const comment = commentMatch ? commentMatch[2] : null;
+              
+              return (
+                <Listbox.Option key={idx} value={opt.value} className={({ active }) => `cursor-pointer select-none px-3 py-2.5 text-sm transition-colors ${active ? 'bg-primary-50 text-primary-900' : 'text-neutral-900'}`}>
+                  <div className="flex flex-col">
+                    <span>{mainLabel}</span>
+                    {comment && (
+                      <span className="text-xs text-neutral-500 mt-0.5">{comment}</span>
+                    )}
+                  </div>
+                </Listbox.Option>
+              );
+            })}
           </Listbox.Options>
         </Transition>
       </div>
@@ -49,7 +61,11 @@ function renderButtonLabel<T>(options: Option<T>[], value: T | T[] | null, place
     return t.common.selected.replace('{count}', String(labels.length));
   }
   const found = findOption(options, value, getKey);
-  return found?.label ?? defaultPlaceholder;
+  if (!found) return defaultPlaceholder;
+  
+  // Strip comment from label for button display (format: "value (comment)")
+  const commentMatch = found.label.match(/^(.+?)\s*\((.+?)\)$/);
+  return commentMatch ? commentMatch[1] : found.label;
 }
 
 function findOption<T>(options: Option<T>[], v: T, getKey?: (v: T) => string | number) {

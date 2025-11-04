@@ -1,11 +1,12 @@
 export * from './types';
 export * from './belarusbank-adapter';
+export * from './belarusbank-open-banking-adapter';
 
 /**
  * Registry of available bank adapters
  */
 import { BankApiAdapter } from './types';
-import { BelarusbankAdapter } from './belarusbank-adapter';
+import { BelarusbankOpenBankingAdapter } from './belarusbank-open-banking-adapter';
 
 const adapters: Map<string, BankApiAdapter> = new Map();
 
@@ -34,8 +35,12 @@ export function getAllAdapters(): BankApiAdapter[] {
  * Initialize default adapters
  */
 export function initializeAdapters(): void {
-  // Register Belarusbank adapter
-  const belarusbankAdapter = new BelarusbankAdapter();
+  // Register Belarusbank Open Banking adapter (new API)
+  const belarusbankAdapter = new BelarusbankOpenBankingAdapter();
   registerAdapter(belarusbankAdapter);
+  
+  // Old adapter disabled - keeping for reference:
+  // const belarusbankAdapter = new BelarusbankAdapter();
+  // registerAdapter(belarusbankAdapter);
 }
 

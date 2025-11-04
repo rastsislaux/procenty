@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Template, PRECONFIGURED_TEMPLATES } from '../../config/loan-templates';
 import { loadTemplates, removeUserTemplate, upsertUserTemplate, refreshDynamicTemplates } from '../state/templatesStore';
 import { Dialog } from '@headlessui/react';
@@ -25,7 +25,6 @@ export function TemplatesPage({
   const [editing, setEditing] = useState<Template | null>(null);
   const [conditionsModalOpen, setConditionsModalOpen] = useState(false);
   const [selectedTemplateForConditions, setSelectedTemplateForConditions] = useState<Template | null>(null);
-  const [refreshingDynamic, setRefreshingDynamic] = useState(false);
   
   function toggleSelection(id: string) {
     if (selectedForComparison.includes(id)) {
@@ -58,17 +57,17 @@ export function TemplatesPage({
   }
 
   async function handleRefreshDynamic() {
-    setRefreshingDynamic(true);
     try {
       const { templates, errors } = await refreshDynamicTemplates();
+      console.log(`[TemplatesPage] Refreshed dynamic templates: ${templates.length} templates, ${errors.length} errors`);
       if (errors.length > 0) {
         console.warn('Errors refreshing dynamic templates:', errors);
       }
-      setState(loadTemplates());
+      const newState = loadTemplates();
+      console.log(`[TemplatesPage] Loaded state: ${newState.dynamic.length} dynamic templates`);
+      setState(newState);
     } catch (error) {
       console.error('Failed to refresh dynamic templates:', error);
-    } finally {
-      setRefreshingDynamic(false);
     }
   }
 
@@ -83,11 +82,9 @@ export function TemplatesPage({
 
   const allTemplates = useMemo(() => [...state.preconfigured, ...state.user, ...state.dynamic], [state]);
 
-  // Initial load of dynamic templates on mount
-  React.useEffect(() => {
-    if (state.dynamic.length === 0) {
-      handleRefreshDynamic();
-    }
+  // Auto-refresh dynamic templates on mount
+  useEffect(() => {
+    handleRefreshDynamic();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -160,32 +157,35 @@ export function TemplatesPage({
           }}
         />
       </section>
-      {state.dynamic.length > 0 && (
+      {/* Dynamic templates section - hidden for now */}
+      {false && (
         <section>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-semibold text-neutral-900">Кредиты из банков (API)</h2>
-            <Button 
-              variant="secondary" 
-              size="xs" 
-              onClick={handleRefreshDynamic}
-              disabled={refreshingDynamic}
-            >
-              {refreshingDynamic ? 'Обновление...' : 'Обновить'}
-            </Button>
+            <h2 className="text-base font-semibold text-neutral-900">
+              Кредиты из банков (API) {state.dynamic.length > 0 && `(${state.dynamic.length})`}
+            </h2>
           </div>
-          <TemplateList 
-            list={filteredDynamic} 
-            onEdit={() => {}} 
-            editable={false} 
-            language={language} 
-            t={t}
-            selectedForComparison={selectedForComparison}
-            onToggleSelection={toggleSelection}
-            onShowConditions={(t) => {
-              setSelectedTemplateForConditions(t);
-              setConditionsModalOpen(true);
-            }}
-          />
+          {filteredDynamic.length > 0 ? (
+            <TemplateList 
+              list={filteredDynamic} 
+              onEdit={() => {}} 
+              editable={false} 
+              language={language} 
+              t={t}
+              selectedForComparison={selectedForComparison}
+              onToggleSelection={toggleSelection}
+              onShowConditions={(t) => {
+                setSelectedTemplateForConditions(t);
+                setConditionsModalOpen(true);
+              }}
+            />
+          ) : (
+            <div className="text-sm text-neutral-500 py-4">
+              {state.dynamic.length === 0 
+                ? 'Загрузка кредитов из банков...'
+                : 'Нет кредитов, соответствующих поисковому запросу'}
+            </div>
+          )}
         </section>
       )}
 

@@ -22,9 +22,16 @@ export function NumberInput({ value, onChange, constraint, step = 0.01, classNam
   const defaultWidth = compact ? 'w-28' : 'w-full';
   const inputClassName = `${baseClassName} ${className ?? defaultWidth}`;
   if (constraint?.type === 'enum') {
+    // Use unit prop if provided, otherwise default to empty string
+    const unitSuffix = unit ? ` ${unit}` : '';
     return (
       <Select
-        options={constraint.values.map((v) => ({ value: String(v), label: String(v) }))}
+        options={constraint.values.map((v) => {
+          const label = constraint.labels?.[v] 
+            ? `${v}${unitSuffix} (${constraint.labels[v]})`
+            : `${v}${unitSuffix}`;
+          return { value: String(v), label };
+        })}
         value={value != null ? String(value) : ''}
         onChange={(v: any) => onChange(v === '' ? undefined : Number(v))}
       />
