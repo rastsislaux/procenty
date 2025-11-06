@@ -4,20 +4,12 @@ import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend } f
 import { Dialog } from '@headlessui/react';
 import { ScheduleTable } from './ScheduleTable';
 import { useI18n } from '../../i18n/context';
-import {
-  TableContainer,
-  Table,
-  TableHeader,
-  TableHeaderCell,
-  TableBody,
-  TableRow,
-  TableCell,
-} from '../../shared/components/Table';
 import { ModalOverlay, ModalContainer, ModalPanel } from '../../shared/components/Modal';
 import { convertCurrencyString, getCachedExchangeRates } from '../../shared/utils/currencyConverter';
 import { Select } from '../../shared/components/Select';
 import { FormLabel } from '../../shared/components/FormLabel';
 import { Button } from '../../shared/components/Button';
+import { InfoTooltip } from '../../shared/components/Tooltip';
 
 export function ComparePanel({ 
   results, 
@@ -32,9 +24,8 @@ export function ComparePanel({
   onBaseCurrencyChange?: (v: string) => void;
   availableCurrencies?: string[];
 }) {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const [selected, setSelected] = useState<LoanResult | null>(null);
-  const [selectedForDetails, setSelectedForDetails] = useState<LoanResult | null>(null);
   const [showInstallment, setShowInstallment] = useState(true);
   const [showPrincipal, setShowPrincipal] = useState(false);
   const [showInterest, setShowInterest] = useState(false);
@@ -76,85 +67,28 @@ export function ComparePanel({
   if (results.length === 0) return null;
   return (
     <div className="space-y-3 sm:space-y-5">
-      {/* Desktop table view - hidden on mobile */}
-      <div className="hidden lg:block">
-        <TableContainer>
-          <Table>
-            <TableHeader>
-              <tr>
-                <TableHeaderCell>{t.compare.templates}</TableHeaderCell>
-                <TableHeaderCell>{t.templates.currency}</TableHeaderCell>
-                <TableHeaderCell>{t.compare.totalPaid}</TableHeaderCell>
-                <TableHeaderCell>{t.compare.totalInterest}</TableHeaderCell>
-                <TableHeaderCell>{t.compare.payoffMonth}</TableHeaderCell>
-                <TableHeaderCell>{t.compare.maxInstallment}</TableHeaderCell>
-                <TableHeaderCell>{t.compare.minInstallment}</TableHeaderCell>
-                <TableHeaderCell>{null}</TableHeaderCell>
-              </tr>
-            </TableHeader>
-            <TableBody>
-              {results.map((r) => (
-                <TableRow key={r.id ?? r.currency}>
-                  <TableCell variant="font-medium">{names?.[r.id || ''] ?? r.id ?? '-'}</TableCell>
-                  <TableCell>{r.currency}</TableCell>
-                  <TableCell>{r.meta.totalPaid}</TableCell>
-                  <TableCell>{r.meta.totalInterest}</TableCell>
-                  <TableCell>{r.meta.payoffMonth}</TableCell>
-                  <TableCell>{r.meta.maxInstallment}</TableCell>
-                  <TableCell>{r.meta.minInstallment}</TableCell>
-                  <TableCell>
-                    <button 
-                      onClick={() => setSelected(r)}
-                      className="text-primary-600 hover:text-primary-700 font-medium text-xs hover:underline transition-colors"
-                    >
-                      {t.common.schedule}
-                    </button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </div>
-      
-      {/* Mobile collapsed view - visible only on mobile */}
-      <div className="lg:hidden space-y-2">
-        {results.map((r) => {
-          const templateName = names?.[r.id || ''] ?? r.id ?? '-';
-          const shortDescription = r.meta.totalPaid ? `${r.currency} • ${r.meta.totalPaid}` : r.currency;
-          return (
-            <div key={r.id ?? r.currency} className="card-base p-3">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-sm text-neutral-900 mb-1">{templateName}</div>
-                  <div className="text-xs text-neutral-600">{shortDescription}</div>
-                </div>
-                <Button
-                  variant="primary-outline"
-                  size="xs"
-                  onClick={() => setSelectedForDetails(r)}
-                  className="flex-shrink-0"
-                >
-                  {t.compare.viewDetails}
-                </Button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
       <div className="space-y-2 sm:space-y-3">
         <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm border border-neutral-200 rounded-lg p-2 sm:p-3 bg-neutral-50">
           <label className="flex items-center gap-1.5 sm:gap-2 cursor-pointer">
             <input type="checkbox" checked={showInstallment} onChange={(e) => setShowInstallment(e.target.checked)} className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500" />
-            <span className="text-neutral-700 font-medium">{t.compare.installment}</span>
+            <span className="text-neutral-700 font-medium flex items-center gap-1">
+              {t.compare.installment}
+              <InfoTooltip content={t.tooltips.installment} />
+            </span>
           </label>
           <label className="flex items-center gap-1.5 sm:gap-2 cursor-pointer">
             <input type="checkbox" checked={showPrincipal} onChange={(e) => setShowPrincipal(e.target.checked)} className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500" />
-            <span className="text-neutral-700 font-medium">{t.compare.principal}</span>
+            <span className="text-neutral-700 font-medium flex items-center gap-1">
+              {t.compare.principal}
+              <InfoTooltip content={t.tooltips.principalPortion} />
+            </span>
           </label>
           <label className="flex items-center gap-1.5 sm:gap-2 cursor-pointer">
             <input type="checkbox" checked={showInterest} onChange={(e) => setShowInterest(e.target.checked)} className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500" />
-            <span className="text-neutral-700 font-medium">{t.compare.interest}</span>
+            <span className="text-neutral-700 font-medium flex items-center gap-1">
+              {t.compare.interest}
+              <InfoTooltip content={t.tooltips.interestPortion} />
+            </span>
           </label>
         </div>
         {baseCurrency && availableCurrencies && availableCurrencies.length > 1 && (
@@ -216,33 +150,35 @@ export function ComparePanel({
             })()}
           </div>
         )}
-        <div className="h-64 sm:h-80 w-full border border-neutral-200 rounded-lg bg-white p-2 sm:p-4 shadow-soft">
+        <div className="h-64 sm:h-80 w-full border border-neutral-200 rounded-lg bg-white p-1 sm:p-2 md:p-4 shadow-soft">
           <ResponsiveContainer>
             <LineChart data={chartData} margin={{ left: 8, right: 8, top: 8, bottom: 8 }}>
               <XAxis 
                 dataKey="month" 
-                tick={{ fontSize: 10 }}
-                style={{ fontSize: '10px' }}
+                tick={{ fontSize: 12 }}
+                style={{ fontSize: '12px' }}
+                label={{ value: language === 'ru' ? 'Месяц' : language === 'be' ? 'Месяц' : 'Month', position: 'insideBottom', offset: -5, style: { textAnchor: 'middle', fontSize: '12px' } }}
               />
               <YAxis 
-                tick={{ fontSize: 10 }}
-                style={{ fontSize: '10px' }}
+                tick={{ fontSize: 12 }}
+                style={{ fontSize: '12px' }}
+                label={{ value: baseCurrency ? `${baseCurrency}` : (language === 'ru' ? 'Сумма' : language === 'be' ? 'Сума' : 'Amount'), angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fontSize: '12px' } }}
               />
               <Tooltip 
                 contentStyle={{ 
-                  fontSize: '10px', 
-                  padding: '4px 6px',
+                  fontSize: '12px', 
+                  padding: '6px 8px',
                   maxWidth: '70vw',
                   wordWrap: 'break-word',
                   whiteSpace: 'normal',
-                  lineHeight: '1.3'
+                  lineHeight: '1.4'
                 }}
-                labelStyle={{ fontSize: '10px', wordWrap: 'break-word', marginBottom: '2px' }}
+                labelStyle={{ fontSize: '12px', wordWrap: 'break-word', marginBottom: '4px', fontWeight: '600' }}
                 wrapperStyle={{ maxWidth: '85vw' }}
               />
               <Legend 
-                wrapperStyle={{ fontSize: '10px', paddingTop: '8px' }}
-                iconSize={8}
+                wrapperStyle={{ fontSize: '12px', paddingTop: '8px' }}
+                iconSize={10}
               />
               {results.flatMap((r, idx) => {
                 const prefix = names?.[r.id || ''] ?? r.id ?? r.currency;
@@ -274,63 +210,6 @@ export function ComparePanel({
               {t.common.schedule} - {selected && (names?.[selected.id || ''] ?? selected.id ?? selected.currency)}
             </Dialog.Title>
             {selected && <ScheduleTable result={selected} />}
-          </ModalPanel>
-        </ModalContainer>
-      </Dialog>
-
-      {/* Mobile details modal */}
-      <Dialog open={!!selectedForDetails} onClose={() => setSelectedForDetails(null)} className="relative z-50">
-        <ModalOverlay onClick={() => setSelectedForDetails(null)} />
-        <ModalContainer onClick={() => setSelectedForDetails(null)}>
-          <ModalPanel maxWidth="2xl" className="max-h-[90vh] overflow-auto p-4 sm:p-6" onClose={() => setSelectedForDetails(null)} closeLabel={t.common.close}>
-            {selectedForDetails && (
-              <>
-                <Dialog.Title className="text-base sm:text-xl font-semibold text-neutral-900 mb-3 sm:mb-4">
-                  {names?.[selectedForDetails.id || ''] ?? selectedForDetails.id ?? selectedForDetails.currency}
-                </Dialog.Title>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div className="card-base p-3">
-                      <div className="text-xs text-neutral-600 mb-1">{t.templates.currency}</div>
-                      <div className="font-semibold">{selectedForDetails.currency}</div>
-                    </div>
-                    <div className="card-base p-3">
-                      <div className="text-xs text-neutral-600 mb-1">{t.compare.totalPaid}</div>
-                      <div className="font-semibold">{selectedForDetails.meta.totalPaid}</div>
-                    </div>
-                    <div className="card-base p-3">
-                      <div className="text-xs text-neutral-600 mb-1">{t.compare.totalInterest}</div>
-                      <div className="font-semibold">{selectedForDetails.meta.totalInterest}</div>
-                    </div>
-                    <div className="card-base p-3">
-                      <div className="text-xs text-neutral-600 mb-1">{t.compare.payoffMonth}</div>
-                      <div className="font-semibold">{selectedForDetails.meta.payoffMonth}</div>
-                    </div>
-                    <div className="card-base p-3">
-                      <div className="text-xs text-neutral-600 mb-1">{t.compare.maxInstallment}</div>
-                      <div className="font-semibold">{selectedForDetails.meta.maxInstallment}</div>
-                    </div>
-                    <div className="card-base p-3">
-                      <div className="text-xs text-neutral-600 mb-1">{t.compare.minInstallment}</div>
-                      <div className="font-semibold">{selectedForDetails.meta.minInstallment}</div>
-                    </div>
-                  </div>
-                  <div>
-                    <Button
-                      variant="primary-outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedForDetails(null);
-                        setSelected(selectedForDetails);
-                      }}
-                      className="w-full"
-                    >
-                      {t.common.schedule}
-                    </Button>
-                  </div>
-                </div>
-              </>
-            )}
           </ModalPanel>
         </ModalContainer>
       </Dialog>

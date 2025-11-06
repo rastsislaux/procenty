@@ -7,7 +7,7 @@ export function LoanSummary({ result }: { result: LoanResult }) {
   const m = result.meta;
   return (
     <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
-      <SummaryCard label={t.templates.currency} value={result.currency} />
+      <SummaryCard label={t.loans.currency} value={result.currency} />
       <SummaryCard label={t.loanSummary.totalPaid} value={m.totalPaid} />
       <SummaryCard label={t.loanSummary.totalInterest} value={m.totalInterest} />
       <SummaryCard label={t.loanSummary.maxInstallment} value={m.maxInstallment} />

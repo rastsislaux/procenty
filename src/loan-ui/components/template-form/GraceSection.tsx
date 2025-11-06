@@ -17,14 +17,14 @@ export function GraceSection({ value, open, onToggle, onChange }: { value: Templ
   }
 
   const graceTypeOptions = [
-    { value: 'InterestOnly' as const, label: t.templates.interestOnly },
-    { value: 'ReducedRate' as const, label: t.templates.reducedRateType },
+    { value: 'InterestOnly' as const, label: t.loans.interestOnly },
+    { value: 'ReducedRate' as const, label: t.loans.reducedRateType },
   ];
 
   return (
     <SectionContainer>
       <div className="flex items-center justify-between">
-        <div className="font-medium text-sm sm:text-base">{t.templates.gracePeriod}</div>
+        <div className="font-medium text-sm sm:text-base">{t.loans.gracePeriod}</div>
         <Switch checked={open} onChange={(v) => { onToggle(v); if (!v) onChange({ ...value, grace: undefined }); else onChange({ ...value, grace: { type: 'InterestOnly', months: 3 } as any }); }} className={clsx('relative inline-flex h-6 w-11 items-center rounded-full flex-shrink-0', open ? 'bg-blue-600' : 'bg-gray-300')}>
           <span className={clsx('inline-block h-4 w-4 transform rounded-full bg-white transition', open ? 'translate-x-6' : 'translate-x-1')} />
         </Switch>
@@ -32,7 +32,7 @@ export function GraceSection({ value, open, onToggle, onChange }: { value: Templ
       {open && value.grace && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-2 sm:gap-3 mt-2 sm:mt-3 items-end">
           <div>
-            <FormLabel className="text-xs sm:text-sm">{t.templates.graceType}</FormLabel>
+            <FormLabel className="text-xs sm:text-sm">{t.loans.graceType}</FormLabel>
             <Select
               options={graceTypeOptions}
               value={value.grace.type}
@@ -40,12 +40,12 @@ export function GraceSection({ value, open, onToggle, onChange }: { value: Templ
             />
           </div>
           <div>
-            <FormLabel className="text-xs sm:text-sm">{t.templates.graceMonths}</FormLabel>
+            <FormLabel className="text-xs sm:text-sm">{t.loans.graceMonths}</FormLabel>
             <FormInput type="number" className="w-full sm:w-24" value={value.grace.months} onChange={(e) => updateGrace('months', Number(e.target.value))} />
           </div>
           {value.grace.type === 'ReducedRate' && (
             <div>
-              <FormLabel className="text-xs sm:text-sm">{t.templates.reducedRate}</FormLabel>
+              <FormLabel className="text-xs sm:text-sm">{t.loans.reducedRate}</FormLabel>
               <FormInput type="number" step="0.01" className="w-full sm:w-28" value={value.grace.reducedAnnualRatePercent ?? 0} onChange={(e) => updateGrace('reducedAnnualRatePercent', Number(e.target.value))} />
             </div>
           )}

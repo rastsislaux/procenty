@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
+import { Dialog } from '@headlessui/react';
 import { loadTemplates } from '../state/templatesStore';
 import { Template } from '../../config/loan-templates';
 import { computeBatch } from '../../loan-engine/batch';
@@ -6,6 +7,7 @@ import { templateToConfig, validateAgainstConstraints, convertUIEventsToEngine }
 import { FirstPaymentConfig, LoanResult } from '../../loan-engine';
 import { ComparePanel } from '../components/ComparePanel';
 import { PrepaymentEditor } from '../components/PrepaymentEditor';
+import { ScheduleTable } from '../components/ScheduleTable';
 import { Select } from '../../shared/components/Select';
 import { NumberInput as ConstrainedNumberInput } from '../../shared/components/NumberInput';
 import { useI18n } from '../../i18n/context';
@@ -20,6 +22,8 @@ import { Button } from '../../shared/components/Button';
 import { convertCurrencyString, getAvailableCurrencies } from '../../shared/utils/currencyConverter';
 import { FormLabel } from '../../shared/components/FormLabel';
 import { loadAppState, saveAppState, PerTemplateInputs } from '../state/appStateStore';
+import { InfoTooltip } from '../../shared/components/Tooltip';
+import { ModalOverlay, ModalContainer, ModalPanel } from '../../shared/components/Modal';
 
 // extracted subcomponents imported above
 
@@ -46,6 +50,7 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
   });
   const [conditionsModalOpen, setConditionsModalOpen] = useState(false);
   const [selectedTemplateForConditions, setSelectedTemplateForConditions] = useState<Template | null>(null);
+  const [selectedForSchedule, setSelectedForSchedule] = useState<LoanResult | null>(null);
   const nameMap = useMemo(() => Object.fromEntries(all.map(t => [t.id, getTemplateName(t, language) || t.id])), [all, language]);
   
   // Detect if multiple currencies are present
@@ -242,7 +247,9 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
                 <span className="text-primary-900">{t.compare.title}:</span> <span className="text-primary-700">{selected.map(t => getTemplateName(t, language) || t.id).join(', ')}</span>
               </div>
               <div className="mt-3 sm:mt-4 space-y-3 sm:space-y-4">
-              {selected.map((template) => (
+              {selected.map((template) => {
+                const result = results.find(r => r.id === template.id);
+                return (
                 <div key={template.id} className="card-base p-3 sm:p-4 border-l-4 border-l-primary-500">
                   <div className="flex items-center justify-between mb-2 sm:mb-3">
                     <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
@@ -304,11 +311,96 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
                       </svg>
                     </IconButton>
                   </div>
+                  {/* Summary stats - shown when collapsed and results available */}
+                  {collapsed[template.id] && result && !errors[template.id] && (() => {
+                    const totalPaidNum = Number(result.meta.totalPaid.replace(/,/g, ''));
+                    const totalInterestNum = Number(result.meta.totalInterest.replace(/,/g, ''));
+                    const interestPercent = totalPaidNum > 0 ? ((totalInterestNum / totalPaidNum) * 100).toFixed(1) : '0.0';
+                    return (
+                      <div className="flex items-end gap-2 sm:gap-3 mb-2 sm:mb-3 pt-2 sm:pt-3 border-t border-neutral-200">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 flex-1">
+                          <div className="text-xs">
+                            <div className="text-neutral-500 mb-0.5">{t.loanSummary.totalPaid}</div>
+                            <div className="font-semibold text-neutral-900">{result.meta.totalPaid} {result.currency}</div>
+                          </div>
+                          <div className="text-xs">
+                            <div className="text-neutral-500 mb-0.5">{t.loanSummary.totalInterest}</div>
+                            <div className="font-semibold text-neutral-900">{result.meta.totalInterest} {result.currency} ({interestPercent}%)</div>
+                          </div>
+                          <div className="text-xs">
+                            <div className="text-neutral-500 mb-0.5">{t.loanSummary.payoffMonth}</div>
+                            <div className="font-semibold text-neutral-900">{result.meta.payoffMonth}</div>
+                          </div>
+                          <div className="text-xs">
+                            <div className="text-neutral-500 mb-0.5">{t.loanSummary.maxInstallment} / {t.loanSummary.minInstallment}</div>
+                            <div className="font-semibold text-neutral-900 inline-flex items-center gap-1">
+                              {result.meta.maxInstallment} <span className="inline-block w-3 h-0.5 bg-neutral-600 relative">
+                                <span className="absolute right-0 top-1/2 -translate-y-1/2 w-0 h-0 border-l-[4px] border-l-neutral-600 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent"></span>
+                              </span> {result.meta.minInstallment}
+                            </div>
+                          </div>
+                        </div>
+                        <Button
+                          variant="primary-outline"
+                          size="xs"
+                          onClick={() => setSelectedForSchedule(result)}
+                          className="flex-shrink-0"
+                        >
+                          {t.common.schedule}
+                        </Button>
+                      </div>
+                    );
+                  })()}
                   <div className={`overflow-hidden transition-[max-height,opacity] duration-[250ms] ${collapsed[template.id] ? 'max-h-0 opacity-0' : 'max-h-[2000px] opacity-100'}`}>
+                  {/* Summary stats - shown when expanded */}
+                  {!collapsed[template.id] && result && !errors[template.id] && (() => {
+                    const totalPaidNum = Number(result.meta.totalPaid.replace(/,/g, ''));
+                    const totalInterestNum = Number(result.meta.totalInterest.replace(/,/g, ''));
+                    const interestPercent = totalPaidNum > 0 ? ((totalInterestNum / totalPaidNum) * 100).toFixed(1) : '0.0';
+                    return (
+                      <div className="mb-3 sm:mb-4 pb-3 sm:pb-4 border-b border-neutral-200">
+                        <div className="flex items-end gap-2 sm:gap-3">
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 flex-1">
+                            <div className="text-xs sm:text-sm">
+                              <div className="text-neutral-500 mb-1">{t.loanSummary.totalPaid}</div>
+                              <div className="font-semibold text-neutral-900 text-sm sm:text-base">{result.meta.totalPaid} {result.currency}</div>
+                            </div>
+                            <div className="text-xs sm:text-sm">
+                              <div className="text-neutral-500 mb-1">{t.loanSummary.totalInterest}</div>
+                              <div className="font-semibold text-neutral-900 text-sm sm:text-base">{result.meta.totalInterest} {result.currency} ({interestPercent}%)</div>
+                            </div>
+                            <div className="text-xs sm:text-sm">
+                              <div className="text-neutral-500 mb-1">{t.loanSummary.payoffMonth}</div>
+                              <div className="font-semibold text-neutral-900 text-sm sm:text-base">{result.meta.payoffMonth}</div>
+                            </div>
+                            <div className="text-xs sm:text-sm">
+                              <div className="text-neutral-500 mb-1">{t.loanSummary.maxInstallment} / {t.loanSummary.minInstallment}</div>
+                              <div className="font-semibold text-neutral-900 text-sm sm:text-base inline-flex items-center gap-1">
+                                {result.meta.maxInstallment} <span className="inline-block w-3 h-0.5 bg-neutral-600 relative">
+                                  <span className="absolute right-0 top-1/2 -translate-y-1/2 w-0 h-0 border-l-[4px] border-l-neutral-600 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent"></span>
+                                </span> {result.meta.minInstallment}
+                              </div>
+                            </div>
+                          </div>
+                          <Button
+                            variant="primary-outline"
+                            size="sm"
+                            onClick={() => setSelectedForSchedule(result)}
+                            className="flex-shrink-0"
+                          >
+                            {t.common.schedule}
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })()}
                   {/* Main loan parameters - compact horizontal layout */}
                   <div className="flex flex-wrap items-end gap-2 sm:gap-3">
                     <div className="flex-shrink-0">
-                      <label className="block text-xs font-medium text-neutral-700 mb-1">{t.calculator.principal}</label>
+                      <label className="block text-xs font-medium text-neutral-700 mb-1 flex items-center gap-1">
+                        {t.calculator.principal}
+                        <InfoTooltip content={t.tooltips.principal} />
+                      </label>
                       <div className="relative inline-flex items-center">
                         <input className="input-base w-24 sm:w-32 pr-8 sm:pr-10 text-xs sm:text-sm" value={inputs[template.id]?.principal ?? '20000'} onChange={(e) => updateInput(template.id, { principal: e.target.value })} />
                         <span className="absolute right-2 sm:right-3 text-xs sm:text-sm text-neutral-500 pointer-events-none">{template.currency}</span>
@@ -316,7 +408,10 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
                     </div>
                     {template.nominalAnnualRatePercent == null && (
                       <div className="flex-shrink-0">
-                        <label className="block text-xs font-medium text-neutral-700 mb-1">{t.calculator.rate}</label>
+                        <label className="block text-xs font-medium text-neutral-700 mb-1 flex items-center gap-1">
+                          {t.calculator.rate}
+                          <InfoTooltip content={t.tooltips.rate} />
+                        </label>
                         <ConstrainedNumberInput
                           value={inputs[template.id]?.rate}
                           onChange={(rate) => updateInput(template.id, { rate })}
@@ -329,7 +424,10 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
                     )}
                     {template.termMonths == null && (
                       <div className="flex-shrink-0">
-                        <label className="block text-xs font-medium text-neutral-700 mb-1">{t.calculator.termMonths}</label>
+                        <label className="block text-xs font-medium text-neutral-700 mb-1 flex items-center gap-1">
+                          {t.calculator.termMonths}
+                          <InfoTooltip content={t.tooltips.termMonths} />
+                        </label>
                         <ConstrainedNumberInput
                           value={inputs[template.id]?.term}
                           onChange={(term) => updateInput(template.id, { term })}
@@ -342,7 +440,10 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
                     )}
                     {template.grace && template.grace.type === 'ReducedRate' && template.grace.reducedAnnualRatePercent == null && (
                       <div className="flex-shrink-0">
-                        <label className="block text-xs font-medium text-neutral-700 mb-1">{t.templates.reducedRate}</label>
+                        <label className="block text-xs font-medium text-neutral-700 mb-1 flex items-center gap-1">
+                          {t.loans.reducedRate}
+                          <InfoTooltip content={t.tooltips.graceReducedRate} />
+                        </label>
                         <ConstrainedNumberInput
                           value={inputs[template.id]?.graceReducedRatePercent}
                           onChange={(v) => updateInput(template.id, { graceReducedRatePercent: v })}
@@ -359,11 +460,17 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
                   {template.allowFirstPayment && (
                     <div className="flex flex-wrap items-end gap-2 sm:gap-3 mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-neutral-200">
                       <div className="flex-shrink-0">
-                        <label className="block text-xs font-medium text-neutral-700 mb-1">{t.calculator.firstPaymentType}</label>
+                        <label className="block text-xs font-medium text-neutral-700 mb-1 flex items-center gap-1">
+                          {t.calculator.firstPaymentType}
+                          <InfoTooltip content={t.tooltips.firstPaymentType} />
+                        </label>
                         <Select className="w-28 sm:w-32" options={[{ value: 'Percent', label: t.fields.percent }, { value: 'Absolute', label: t.fields.absolute }]} value={inputs[template.id]?.firstPayment?.type ?? 'Percent'} onChange={(v) => updateInput(template.id, { firstPayment: { ...(inputs[template.id]?.firstPayment ?? { value: 0 }), type: v as any } })} />
                       </div>
                       <div className="flex-shrink-0">
-                        <label className="block text-xs font-medium text-neutral-700 mb-1">{t.calculator.firstPaymentValue}</label>
+                        <label className="block text-xs font-medium text-neutral-700 mb-1 flex items-center gap-1">
+                          {t.calculator.firstPaymentValue}
+                          <InfoTooltip content={t.tooltips.firstPaymentValue} />
+                        </label>
                         {(() => {
                           const firstPaymentType = inputs[template.id]?.firstPayment?.type ?? 'Percent';
                           const isPercent = firstPaymentType === 'Percent';
@@ -405,7 +512,8 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
                   )}
                   </div>
                 </div>
-              ))}
+              );
+              })}
               </div>
               {selected.length > 0 && results.length === 0 && Object.keys(errors).length === selected.length && (
                 <div className="mt-4">
@@ -414,7 +522,7 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
               )}
             </>
           ) : (
-            <EmptyState message={t.compare.selectTemplatesBelow} />
+            <EmptyState message={t.compare.selectLoansBelow} />
           )}
         </div>
 
@@ -426,6 +534,19 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
           setSelectedTemplateForConditions(null);
         }}
       />
+
+      {/* Payment Schedule Modal */}
+      <Dialog open={!!selectedForSchedule} onClose={() => setSelectedForSchedule(null)} className="relative z-50">
+        <ModalOverlay onClick={() => setSelectedForSchedule(null)} />
+        <ModalContainer onClick={() => setSelectedForSchedule(null)}>
+          <ModalPanel maxWidth="4xl" className="max-h-[80vh] overflow-auto p-4 sm:p-6" onClose={() => setSelectedForSchedule(null)} closeLabel={t.common.close}>
+            <Dialog.Title className="text-base sm:text-xl font-semibold text-neutral-900 mb-3 sm:mb-4">
+              {t.common.schedule} - {selectedForSchedule && (nameMap[selectedForSchedule.id || ''] ?? selectedForSchedule.id ?? selectedForSchedule.currency)}
+            </Dialog.Title>
+            {selectedForSchedule && <ScheduleTable result={selectedForSchedule} />}
+          </ModalPanel>
+        </ModalContainer>
+      </Dialog>
     </div>
   );
 }

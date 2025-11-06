@@ -62,14 +62,14 @@ export interface Translations {
   footer: {
     rights: string; // e.g., "© {from} - {to} Your Name. All rights reserved."
   };
-  templates: {
+  loans: {
     title: string;
-    yourTemplates: string;
+    yourLoans: string;
     preconfigured: string;
-    newTemplate: string;
-    createTemplate: string;
-    editTemplate: string;
-    noTemplates: string;
+    newLoan: string;
+    createLoan: string;
+    editLoan: string;
+    noLoans: string;
     name: string;
     description: string;
     currency: string;
@@ -102,9 +102,28 @@ export interface Translations {
       reduceTerm: string;
       reduceInstallment: string;
     };
+  tooltips: {
+    principal: string;
+    rate: string;
+    termMonths: string;
+    firstPayment: string;
+    firstPaymentType: string;
+    firstPaymentValue: string;
+    prepayments: string;
+    graceMonths: string;
+    graceReducedRate: string;
+    amortization: string;
+    dayCount: string;
+    prepaymentPolicy: string;
+    currency: string;
+    compare: string;
+    installment: string;
+    principalPortion: string;
+    interestPortion: string;
+  };
   calculator: {
     title: string;
-    template: string;
+    loan: string;
     principal: string;
     rate: string;
     term: string;
@@ -120,7 +139,7 @@ export interface Translations {
   };
   compare: {
     title: string;
-    templates: string;
+    loans: string;
     totalPaid: string;
     totalInterest: string;
     payoffMonth: string;
@@ -131,7 +150,7 @@ export interface Translations {
     interest: string;
     validationErrors: string;
     noResults: string;
-    selectTemplatesBelow: string;
+    selectLoansBelow: string;
     baseCurrency: string;
     baseCurrencyDesc: string;
     convertedToBase: string;

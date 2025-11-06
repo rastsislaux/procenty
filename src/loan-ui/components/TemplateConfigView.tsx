@@ -10,7 +10,7 @@ export function TemplateConfigView({ template }: { template: Template }) {
   
   // Currency
   if (template.currency) {
-    features.push(t.templates.currency + ': ' + template.currency);
+    features.push(t.loans.currency + ': ' + template.currency);
   }
   
   // Interest rate
@@ -74,7 +74,7 @@ export function TemplateConfigView({ template }: { template: Template }) {
   
   // Amortization
   if (template.amortization) {
-    features.push(t.templates.amortization + ': ' + (template.amortization === 'Annuity' ? t.fields.annuity : t.fields.differentiated));
+    features.push(t.loans.amortization + ': ' + (template.amortization === 'Annuity' ? t.fields.annuity : t.fields.differentiated));
   }
   
   // Principal
@@ -98,14 +98,14 @@ export function TemplateConfigView({ template }: { template: Template }) {
           (c.max != null ? c.max.toFixed(1) : '') + '%');
       }
     } else {
-      features.push(t.calculator.firstPayment + ': ' + t.templates.allowFirstPayment.toLowerCase());
+      features.push(t.calculator.firstPayment + ': ' + t.loans.allowFirstPayment.toLowerCase());
     }
   }
   
   // Prepayments
   if (template.prepaymentsAllowed) {
     const policy = template.prepaymentPolicy === 'ReduceTerm' ? t.fields.reduceTerm : t.fields.reduceInstallment;
-    features.push(t.templates.allowPrepayments + ' (' + policy.toLowerCase() + ')');
+    features.push(t.loans.allowPrepayments + ' (' + policy.toLowerCase() + ')');
   }
   
   // Grace period
@@ -114,9 +114,9 @@ export function TemplateConfigView({ template }: { template: Template }) {
       ? (language === 'ru' ? 'месяц' : language === 'be' ? 'месяц' : 'month')
       : (language === 'ru' ? 'месяцев' : language === 'be' ? 'месяцаў' : 'months');
     if (template.grace.type === 'InterestOnly') {
-      features.push(t.templates.gracePeriod + ': ' + template.grace.months + ' ' + monthWord + ' (' + t.fields.interestOnly.toLowerCase() + ')');
+      features.push(t.loans.gracePeriod + ': ' + template.grace.months + ' ' + monthWord + ' (' + t.fields.interestOnly.toLowerCase() + ')');
     } else if (template.grace.type === 'ReducedRate') {
-      let graceDesc = t.templates.gracePeriod + ': ' + template.grace.months + ' ' + monthWord + ' (' + t.fields.reducedRate.toLowerCase();
+      let graceDesc = t.loans.gracePeriod + ': ' + template.grace.months + ' ' + monthWord + ' (' + t.fields.reducedRate.toLowerCase();
       if (template.grace.reducedAnnualRatePercent != null) {
         graceDesc += ': ' + template.grace.reducedAnnualRatePercent.toFixed(2) + '%)';
       } else if (template.constraints?.graceReducedAnnualRatePercent) {
@@ -138,7 +138,7 @@ export function TemplateConfigView({ template }: { template: Template }) {
       'Actual_365': 'Actual/365',
       'Actual_Actual': 'Actual/Actual',
     };
-    features.push(t.templates.dayCount + ': ' + dayCountNames[template.dayCount] || template.dayCount);
+    features.push(t.loans.dayCount + ': ' + dayCountNames[template.dayCount] || template.dayCount);
   }
   
   return (

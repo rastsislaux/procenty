@@ -69,7 +69,7 @@ export function DashboardPage() {
                 onClick={() => setMobileDrawerOpen(true)}
                 className="w-full"
               >
-                {t.templates.title || 'Templates'} ({selectedForComparison.length})
+                {t.loans.title || 'Loans'} ({selectedForComparison.length})
               </Button>
             </div>
             <ComparePage selectedTemplateIds={selectedForComparison} />
@@ -87,7 +87,7 @@ export function DashboardPage() {
         <MobileDrawer
           isOpen={mobileDrawerOpen}
           onClose={() => setMobileDrawerOpen(false)}
-          title={t.templates.title || 'Templates'}
+          title={t.loans.title || 'Loans'}
         >
           <TemplatesPage 
             selectedForComparison={selectedForComparison}

@@ -113,14 +113,14 @@ export function TemplatesPage({
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder={t.templates.searchPlaceholder}
+          placeholder={t.loans.searchPlaceholder}
           className="input-base"
         />
       </div>
       <section>
         <div className="flex items-center justify-between mb-2 sm:mb-3 min-w-0 gap-2">
-          <h2 className="text-sm sm:text-base font-semibold text-neutral-900 min-w-0 truncate flex-1">{t.templates.yourTemplates}</h2>
-          <IconButton label={t.templates.newTemplate} title={t.templates.newTemplate} onClick={startCreate} className="!bg-primary-600 !border-primary-600 hover:!bg-primary-700 flex-shrink-0 shadow-sm hover:shadow-md w-8 h-8 sm:w-10 sm:h-10">
+          <h2 className="text-sm sm:text-base font-semibold text-neutral-900 min-w-0 truncate flex-1">{t.loans.yourLoans}</h2>
+          <IconButton label={t.loans.newLoan} title={t.loans.newLoan} onClick={startCreate} className="!bg-primary-600 !border-primary-600 hover:!bg-primary-700 flex-shrink-0 shadow-sm hover:shadow-md w-8 h-8 sm:w-10 sm:h-10">
             <span aria-hidden className="text-base sm:text-lg font-semibold text-white">+</span>
           </IconButton>
         </div>
@@ -141,7 +141,7 @@ export function TemplatesPage({
       </section>
       <section>
         <div className="flex items-center justify-between mb-2 sm:mb-3">
-          <h2 className="text-sm sm:text-base font-semibold text-neutral-900">{t.templates.preconfigured}</h2>
+          <h2 className="text-sm sm:text-base font-semibold text-neutral-900">{t.loans.preconfigured}</h2>
         </div>
         <TemplateList 
           list={filteredPreconfigured} 
@@ -193,7 +193,7 @@ export function TemplatesPage({
         <ModalOverlay onClick={() => setOpen(false)} />
         <ModalContainer onClick={() => setOpen(false)}>
           <ModalPanel maxWidth="2xl" className="max-h-[90vh] overflow-y-auto p-4 sm:p-6" onClose={() => setOpen(false)} closeLabel={t.common.close}>
-            <Dialog.Title className="text-base sm:text-xl font-semibold text-neutral-900 mb-3 sm:mb-4">{editing?.id?.startsWith('user-') ? t.templates.createTemplate : t.templates.editTemplate}</Dialog.Title>
+            <Dialog.Title className="text-base sm:text-xl font-semibold text-neutral-900 mb-3 sm:mb-4">{editing?.id?.startsWith('user-') ? t.loans.createLoan : t.loans.editLoan}</Dialog.Title>
             {editing && (
               <div className="mt-3 sm:mt-4">
                 <TemplateForm value={editing} onChange={setEditing as any} onSubmit={() => save(editing)} />
@@ -236,7 +236,7 @@ function TemplateList({
   onToggleSelection: (id: string) => void;
   onShowConditions?: (t: Template) => void;
 }) {
-  if (list.length === 0) return <EmptyState message={t.templates.noTemplates} />;
+  if (list.length === 0) return <EmptyState message={t.loans.noLoans} />;
   return (
     <div className="grid grid-cols-1 gap-3">
       {list.map((template) => (
