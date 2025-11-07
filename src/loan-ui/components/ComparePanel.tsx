@@ -29,6 +29,12 @@ export function ComparePanel({
   const [showInstallment, setShowInstallment] = useState(true);
   const [showPrincipal, setShowPrincipal] = useState(false);
   const [showInterest, setShowInterest] = useState(false);
+  const [showInflation, setShowInflation] = useState(false);
+  
+  // Check if any result has inflation data
+  const hasInflation = useMemo(() => {
+    return results.some(r => r.schedule.length > 0 && r.schedule[0].installmentPV != null);
+  }, [results]);
   
   // Get exchange rates for display
   const exchangeRates = useMemo(() => getCachedExchangeRates(), []);
@@ -36,23 +42,33 @@ export function ComparePanel({
     if (results.length === 0) return [];
     const maxLen = Math.max(...results.map(r => r.schedule.length));
     const rows: any[] = [];
+    const usePV = hasInflation && showInflation;
     for (let i = 0; i < maxLen; i++) {
       const row: any = { month: i + 1 };
       for (const r of results) {
         const prefix = names?.[r.id || ''] ?? r.id ?? r.currency;
         const sched = r.schedule[i];
         if (sched) {
-          // Convert to base currency if specified and different from result currency
-          let installment = Number(String(sched.installment).replace(/,/g, ''));
-          let principal = Number(String(sched.principalPortion).replace(/,/g, ''));
-          let interest = Number(String(sched.interestPortion).replace(/,/g, ''));
+          // Use PV values if inflation is enabled and available
+          let installment = usePV && sched.installmentPV 
+            ? Number(String(sched.installmentPV).replace(/,/g, ''))
+            : Number(String(sched.installment).replace(/,/g, ''));
+          let principal = usePV && sched.principalPortionPV
+            ? Number(String(sched.principalPortionPV).replace(/,/g, ''))
+            : Number(String(sched.principalPortion).replace(/,/g, ''));
+          let interest = usePV && sched.interestPortionPV
+            ? Number(String(sched.interestPortionPV).replace(/,/g, ''))
+            : Number(String(sched.interestPortion).replace(/,/g, ''));
           
           if (baseCurrency && r.currency !== baseCurrency) {
             const fromCurrency = r.currency;
             const toCurrency = baseCurrency;
-            installment = Number(convertCurrencyString(sched.installment, fromCurrency, toCurrency).replace(/,/g, ''));
-            principal = Number(convertCurrencyString(sched.principalPortion, fromCurrency, toCurrency).replace(/,/g, ''));
-            interest = Number(convertCurrencyString(sched.interestPortion, fromCurrency, toCurrency).replace(/,/g, ''));
+            const installmentStr = usePV && sched.installmentPV ? sched.installmentPV : sched.installment;
+            const principalStr = usePV && sched.principalPortionPV ? sched.principalPortionPV : sched.principalPortion;
+            const interestStr = usePV && sched.interestPortionPV ? sched.interestPortionPV : sched.interestPortion;
+            installment = Number(convertCurrencyString(installmentStr, fromCurrency, toCurrency).replace(/,/g, ''));
+            principal = Number(convertCurrencyString(principalStr, fromCurrency, toCurrency).replace(/,/g, ''));
+            interest = Number(convertCurrencyString(interestStr, fromCurrency, toCurrency).replace(/,/g, ''));
           }
           
           row[`${prefix} installment`] = installment;
@@ -63,7 +79,7 @@ export function ComparePanel({
       rows.push(row);
     }
     return rows;
-  }, [results, names, baseCurrency]);
+  }, [results, names, baseCurrency, hasInflation, showInflation]);
   if (results.length === 0) return null;
   return (
     <div className="space-y-3 sm:space-y-5">
@@ -90,6 +106,15 @@ export function ComparePanel({
               <InfoTooltip content={t.tooltips.interestPortion} />
             </span>
           </label>
+          {hasInflation && (
+            <label className="flex items-center gap-1.5 sm:gap-2 cursor-pointer">
+              <input type="checkbox" checked={showInflation} onChange={(e) => setShowInflation(e.target.checked)} className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500" />
+              <span className="text-neutral-700 font-medium flex items-center gap-1">
+                {t.compare.showInflation}
+                <InfoTooltip content={t.tooltips.inflationRate} />
+              </span>
+            </label>
+          )}
         </div>
         {baseCurrency && availableCurrencies && availableCurrencies.length > 1 && (
           <div className="p-2 sm:p-3 bg-primary-50 border border-primary-200 rounded-lg space-y-2">

@@ -5,12 +5,14 @@ export function toJSON(result: LoanResult): string {
 }
 
 export function toCSV(result: LoanResult): string {
+  const hasInflation = result.schedule.length > 0 && result.schedule[0].installmentPV != null;
   const header = [
     "monthIndex",
     "installment",
     "interestPortion",
     "principalPortion",
     "remainingPrincipal",
+    ...(hasInflation ? ["installmentPV", "interestPortionPV", "principalPortionPV", "remainingPrincipalPV"] : []),
     "periodicRate",
     "notes"
   ];
@@ -22,6 +24,12 @@ export function toCSV(result: LoanResult): string {
       r.interestPortion,
       r.principalPortion,
       r.remainingPrincipal,
+      ...(hasInflation ? [
+        r.installmentPV ?? "",
+        r.interestPortionPV ?? "",
+        r.principalPortionPV ?? "",
+        r.remainingPrincipalPV ?? ""
+      ] : []),
       r.periodicRate,
       r.notes?.join("|") ?? ""
     ].join(","));

@@ -10,6 +10,7 @@ export type PerTemplateInputs = {
   prepayments?: any[];
   graceReducedRatePercent?: number;
   graceMonths?: number;
+  inflationRate?: number;
 };
 
 export type AppState = {

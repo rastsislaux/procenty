@@ -120,6 +120,7 @@ export interface Translations {
     installment: string;
     principalPortion: string;
     interestPortion: string;
+    inflationRate: string;
   };
   calculator: {
     title: string;
@@ -136,6 +137,7 @@ export interface Translations {
     table: string;
     chart: string;
     exportCSV: string;
+    inflationRate: string;
   };
   compare: {
     title: string;
@@ -159,6 +161,7 @@ export interface Translations {
     ratesByExchangeRateApi: string;
     ratesByExchangeRateApiTitle: string;
     viewDetails: string;
+    showInflation: string;
   };
   schedule: {
     month: string;
@@ -167,6 +170,11 @@ export interface Translations {
     principal: string;
     remaining: string;
     exportCSV: string;
+    installmentPV: string;
+    interestPV: string;
+    principalPV: string;
+    remainingPV: string;
+    showInflation: string;
   };
   errors: {
     principalRequired: string;

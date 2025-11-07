@@ -39,6 +39,18 @@ export function computeLoan(config: LoanConfig): LoanResult {
 
   const epsilon = new Decimal("0.00000001");
 
+  // Calculate monthly inflation rate if inflation is provided
+  let monthlyInflationRate: Decimal | undefined;
+  if (config.annualInflationRatePercent != null && config.annualInflationRatePercent > 0) {
+    // monthlyRate = (1 + annualRate/100)^(1/12) - 1
+    const annualRateDecimal = toDecimal(config.annualInflationRatePercent).div(100);
+    monthlyInflationRate = ONE.plus(annualRateDecimal).pow(1 / 12).minus(ONE);
+  }
+
+  // Track PV values for metadata
+  let minInstallmentPV: Decimal | undefined;
+  let maxInstallmentPV: Decimal | undefined;
+
   for (let month = 1; month <= config.termMonths; month++) {
     // Apply first payment once at month 1 before computing installment
     const notes: string[] = [];
@@ -140,8 +152,27 @@ export function computeLoan(config: LoanConfig): LoanResult {
     minInstallment = minInstallment ? min(minInstallment, installment) : installment;
     maxInstallment = maxInstallment ? max(maxInstallment, installment) : installment;
 
+    // Calculate present values if inflation is enabled
+    let installmentPV: Decimal | undefined;
+    let interestPortionPV: Decimal | undefined;
+    let principalPortionPV: Decimal | undefined;
+    let remainingPrincipalPV: Decimal | undefined;
+
+    if (monthlyInflationRate) {
+      // PV = FV / (1 + monthlyRate)^monthIndex
+      const discountFactor = ONE.plus(monthlyInflationRate).pow(month);
+      installmentPV = installment.div(discountFactor);
+      interestPortionPV = interestPortion.div(discountFactor);
+      principalPortionPV = principalPortion.div(discountFactor);
+      remainingPrincipalPV = remaining.div(discountFactor);
+
+      // Track min/max PV installments
+      minInstallmentPV = minInstallmentPV ? min(minInstallmentPV, installmentPV) : installmentPV;
+      maxInstallmentPV = maxInstallmentPV ? max(maxInstallmentPV, installmentPV) : installmentPV;
+    }
+
     // Push schedule row (rounded for display)
-    schedule.push({
+    const row: ScheduleRow = {
       monthIndex: month,
       installment: currency.round(installment.toString()),
       interestPortion: currency.round(interestPortion.toString()),
@@ -149,7 +180,17 @@ export function computeLoan(config: LoanConfig): LoanResult {
       remainingPrincipal: currency.round(remaining.toString()),
       periodicRate: r.toString(),
       notes: notes.length ? notes : undefined
-    });
+    };
+
+    // Add PV values if inflation is enabled
+    if (installmentPV) {
+      row.installmentPV = currency.round(installmentPV.toString());
+      row.interestPortionPV = currency.round(interestPortionPV!.toString());
+      row.principalPortionPV = currency.round(principalPortionPV!.toString());
+      row.remainingPrincipalPV = currency.round(remainingPrincipalPV!.toString());
+    }
+
+    schedule.push(row);
 
     if (remaining.lessThanOrEqualTo(epsilon)) {
       break;
@@ -159,18 +200,32 @@ export function computeLoan(config: LoanConfig): LoanResult {
   // Aggregates
   let totalPaid = ZERO;
   let totalInterest = ZERO;
+  let totalPaidPV = ZERO;
+  let totalInterestPV = ZERO;
   for (const row of schedule) {
     totalPaid = totalPaid.plus(toDecimal(row.installment));
     totalInterest = totalInterest.plus(toDecimal(row.interestPortion));
+    if (row.installmentPV) {
+      totalPaidPV = totalPaidPV.plus(toDecimal(row.installmentPV));
+      totalInterestPV = totalInterestPV.plus(toDecimal(row.interestPortionPV!));
+    }
   }
 
-  const meta = {
+  const meta: any = {
     totalPaid: currency.round(totalPaid.toString()),
     totalInterest: currency.round(totalInterest.toString()),
     maxInstallment: currency.round((maxInstallment ?? ZERO).toString()),
     minInstallment: currency.round((minInstallment ?? ZERO).toString()),
     payoffMonth: schedule.length
   };
+
+  // Add PV totals if inflation is enabled
+  if (monthlyInflationRate) {
+    meta.totalPaidPV = currency.round(totalPaidPV.toString());
+    meta.totalInterestPV = currency.round(totalInterestPV.toString());
+    meta.maxInstallmentPV = currency.round((maxInstallmentPV ?? ZERO).toString());
+    meta.minInstallmentPV = currency.round((minInstallmentPV ?? ZERO).toString());
+  }
 
   return {
     id: config.id,

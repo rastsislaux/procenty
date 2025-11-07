@@ -9,6 +9,7 @@ export type UserInputs = {
   prepayments?: PrepaymentEvent[];
   graceMonths?: number;
   graceReducedRatePercent?: number;
+  inflationRate?: number;
 };
 
 function currencyFrom(code?: Template['currency']) {
@@ -53,6 +54,7 @@ export function templateToConfig(t: Template, u: UserInputs): LoanConfig {
     prepaymentPolicy: t.prepaymentPolicy ? PrepaymentPolicies[t.prepaymentPolicy] : undefined,
     firstPayment: t.allowFirstPayment ? u.firstPayment : undefined,
     prepayments: t.prepaymentsAllowed ? u.prepayments : undefined,
+    annualInflationRatePercent: u.inflationRate,
   };
 }
 

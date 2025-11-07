@@ -121,6 +121,7 @@ export const translations: Record<Language, Translations> = {
       installment: 'Total monthly payment amount',
       principalPortion: 'Part of monthly payment that goes toward the principal balance',
       interestPortion: 'Part of monthly payment that goes toward interest',
+      inflationRate: 'Annual inflation rate used to calculate present value (inflation-adjusted) amounts',
     },
     calculator: {
       title: 'Calculator',
@@ -137,6 +138,7 @@ export const translations: Record<Language, Translations> = {
       table: 'Table',
       chart: 'Chart',
       exportCSV: 'Export CSV',
+      inflationRate: 'Inflation Rate',
     },
     compare: {
       title: 'Compare',
@@ -160,6 +162,7 @@ export const translations: Record<Language, Translations> = {
     ratesByExchangeRateApi: 'Rates by Exchange Rate API',
     ratesByExchangeRateApiTitle: 'Exchange rates provided by Exchange Rate API',
     viewDetails: 'Details',
+    showInflation: 'Show inflation-adjusted',
   },
     schedule: {
       month: 'Month',
@@ -168,6 +171,11 @@ export const translations: Record<Language, Translations> = {
       principal: 'Principal',
       remaining: 'Remaining',
       exportCSV: 'Export CSV',
+      installmentPV: 'Installment (PV)',
+      interestPV: 'Interest (PV)',
+      principalPV: 'Principal (PV)',
+      remainingPV: 'Remaining (PV)',
+      showInflation: 'Show inflation-adjusted values',
     },
     errors: {
       principalRequired: 'Principal must be > 0',
@@ -342,6 +350,7 @@ export const translations: Record<Language, Translations> = {
       installment: 'Общая сумма ежемесячного платежа',
       principalPortion: 'Часть ежемесячного платежа, идущая на погашение основного долга',
       interestPortion: 'Часть ежемесячного платежа, идущая на проценты',
+      inflationRate: 'Годовая ставка инфляции для расчета приведенной стоимости (с учетом инфляции)',
     },
     calculator: {
       title: 'Калькулятор',
@@ -358,6 +367,7 @@ export const translations: Record<Language, Translations> = {
       table: 'Таблица',
       chart: 'График',
       exportCSV: 'Экспорт CSV',
+      inflationRate: 'Ставка инфляции',
     },
     compare: {
       title: 'Сравнение',
@@ -381,6 +391,7 @@ export const translations: Record<Language, Translations> = {
     ratesByExchangeRateApi: 'Курсы от Exchange Rate API',
     ratesByExchangeRateApiTitle: 'Курсы валют предоставлены Exchange Rate API',
     viewDetails: 'Подробнее',
+    showInflation: 'Показать с учетом инфляции',
   },
     schedule: {
       month: 'Месяц',
@@ -389,6 +400,11 @@ export const translations: Record<Language, Translations> = {
       principal: 'Основной долг',
       remaining: 'Остаток',
       exportCSV: 'Экспорт CSV',
+      installmentPV: 'Платеж (ПС)',
+      interestPV: 'Проценты (ПС)',
+      principalPV: 'Основной долг (ПС)',
+      remainingPV: 'Остаток (ПС)',
+      showInflation: 'Показать значения с учетом инфляции',
     },
     errors: {
       principalRequired: 'Сумма кредита должна быть > 0',
@@ -563,6 +579,7 @@ export const translations: Record<Language, Translations> = {
       installment: 'Агульная сума штомесячнага плацяжу',
       principalPortion: 'Частка штомесячнага плацяжу, якая ідзе на пагашэнне асноўнага доўгу',
       interestPortion: 'Частка штомесячнага плацяжу, якая ідзе на працэнты',
+      inflationRate: 'Гадавая стаўка інфляцыі для разліку прыведзенай кошту (з улікам інфляцыі)',
     },
     calculator: {
       title: 'Калькулятар',
@@ -579,6 +596,7 @@ export const translations: Record<Language, Translations> = {
       table: 'Табліца',
       chart: 'Графік',
       exportCSV: 'Экспарт CSV',
+      inflationRate: 'Стаўка інфляцыі',
     },
     compare: {
       title: 'Параўнанне',
@@ -602,6 +620,7 @@ export const translations: Record<Language, Translations> = {
     ratesByExchangeRateApi: 'Курсы ад Exchange Rate API',
     ratesByExchangeRateApiTitle: 'Курсы валют прадастаўлены Exchange Rate API',
     viewDetails: 'Падробнее',
+    showInflation: 'Паказаць з улікам інфляцыі',
   },
     schedule: {
       month: 'Месяц',
@@ -610,6 +629,11 @@ export const translations: Record<Language, Translations> = {
       principal: 'Асноўны доўг',
       remaining: 'Рэшту',
       exportCSV: 'Экспарт CSV',
+      installmentPV: 'Плацёж (ПК)',
+      interestPV: 'Працэнты (ПК)',
+      principalPV: 'Асноўны доўг (ПК)',
+      remainingPV: 'Рэшту (ПК)',
+      showInflation: 'Паказаць значэнні з улікам інфляцыі',
     },
     errors: {
       principalRequired: 'Сума пазыкі павінна быць > 0',

@@ -202,6 +202,7 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
               prepayments: convertedPrepayments,
               graceMonths: inp.graceMonths,
               graceReducedRatePercent: inp.graceReducedRatePercent,
+              inflationRate: inp.inflationRate,
             })
           );
         } catch (err) {
@@ -313,19 +314,24 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
                   </div>
                   {/* Summary stats - shown when collapsed and results available */}
                   {collapsed[template.id] && result && !errors[template.id] && (() => {
-                    const totalPaidNum = Number(result.meta.totalPaid.replace(/,/g, ''));
-                    const totalInterestNum = Number(result.meta.totalInterest.replace(/,/g, ''));
+                    const hasInflation = result.meta.totalPaidPV != null;
+                    const totalPaid = hasInflation ? result.meta.totalPaidPV! : result.meta.totalPaid;
+                    const totalInterest = hasInflation ? result.meta.totalInterestPV! : result.meta.totalInterest;
+                    const maxInstallment = hasInflation ? result.meta.maxInstallmentPV! : result.meta.maxInstallment;
+                    const minInstallment = hasInflation ? result.meta.minInstallmentPV! : result.meta.minInstallment;
+                    const totalPaidNum = Number(totalPaid.replace(/,/g, ''));
+                    const totalInterestNum = Number(totalInterest.replace(/,/g, ''));
                     const interestPercent = totalPaidNum > 0 ? ((totalInterestNum / totalPaidNum) * 100).toFixed(1) : '0.0';
                     return (
                       <div className="flex items-end gap-2 sm:gap-3 mb-2 sm:mb-3 pt-2 sm:pt-3 border-t border-neutral-200">
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 flex-1">
                           <div className="text-xs">
                             <div className="text-neutral-500 mb-0.5">{t.loanSummary.totalPaid}</div>
-                            <div className="font-semibold text-neutral-900">{result.meta.totalPaid} {result.currency}</div>
+                            <div className="font-semibold text-neutral-900">{totalPaid} {result.currency}</div>
                           </div>
                           <div className="text-xs">
                             <div className="text-neutral-500 mb-0.5">{t.loanSummary.totalInterest}</div>
-                            <div className="font-semibold text-neutral-900">{result.meta.totalInterest} {result.currency} ({interestPercent}%)</div>
+                            <div className="font-semibold text-neutral-900">{totalInterest} {result.currency} ({interestPercent}%)</div>
                           </div>
                           <div className="text-xs">
                             <div className="text-neutral-500 mb-0.5">{t.loanSummary.payoffMonth}</div>
@@ -334,9 +340,9 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
                           <div className="text-xs">
                             <div className="text-neutral-500 mb-0.5">{t.loanSummary.maxInstallment} / {t.loanSummary.minInstallment}</div>
                             <div className="font-semibold text-neutral-900 inline-flex items-center gap-1">
-                              {result.meta.maxInstallment} <span className="inline-block w-3 h-0.5 bg-neutral-600 relative">
+                              {maxInstallment} <span className="inline-block w-3 h-0.5 bg-neutral-600 relative">
                                 <span className="absolute right-0 top-1/2 -translate-y-1/2 w-0 h-0 border-l-[4px] border-l-neutral-600 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent"></span>
-                              </span> {result.meta.minInstallment}
+                              </span> {minInstallment}
                             </div>
                           </div>
                         </div>
@@ -354,8 +360,13 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
                   <div className={`overflow-hidden transition-[max-height,opacity] duration-[250ms] ${collapsed[template.id] ? 'max-h-0 opacity-0' : 'max-h-[2000px] opacity-100'}`}>
                   {/* Summary stats - shown when expanded */}
                   {!collapsed[template.id] && result && !errors[template.id] && (() => {
-                    const totalPaidNum = Number(result.meta.totalPaid.replace(/,/g, ''));
-                    const totalInterestNum = Number(result.meta.totalInterest.replace(/,/g, ''));
+                    const hasInflation = result.meta.totalPaidPV != null;
+                    const totalPaid = hasInflation ? result.meta.totalPaidPV! : result.meta.totalPaid;
+                    const totalInterest = hasInflation ? result.meta.totalInterestPV! : result.meta.totalInterest;
+                    const maxInstallment = hasInflation ? result.meta.maxInstallmentPV! : result.meta.maxInstallment;
+                    const minInstallment = hasInflation ? result.meta.minInstallmentPV! : result.meta.minInstallment;
+                    const totalPaidNum = Number(totalPaid.replace(/,/g, ''));
+                    const totalInterestNum = Number(totalInterest.replace(/,/g, ''));
                     const interestPercent = totalPaidNum > 0 ? ((totalInterestNum / totalPaidNum) * 100).toFixed(1) : '0.0';
                     return (
                       <div className="mb-3 sm:mb-4 pb-3 sm:pb-4 border-b border-neutral-200">
@@ -363,11 +374,11 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 flex-1">
                             <div className="text-xs sm:text-sm">
                               <div className="text-neutral-500 mb-1">{t.loanSummary.totalPaid}</div>
-                              <div className="font-semibold text-neutral-900 text-sm sm:text-base">{result.meta.totalPaid} {result.currency}</div>
+                              <div className="font-semibold text-neutral-900 text-sm sm:text-base">{totalPaid} {result.currency}</div>
                             </div>
                             <div className="text-xs sm:text-sm">
                               <div className="text-neutral-500 mb-1">{t.loanSummary.totalInterest}</div>
-                              <div className="font-semibold text-neutral-900 text-sm sm:text-base">{result.meta.totalInterest} {result.currency} ({interestPercent}%)</div>
+                              <div className="font-semibold text-neutral-900 text-sm sm:text-base">{totalInterest} {result.currency} ({interestPercent}%)</div>
                             </div>
                             <div className="text-xs sm:text-sm">
                               <div className="text-neutral-500 mb-1">{t.loanSummary.payoffMonth}</div>
@@ -376,9 +387,9 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
                             <div className="text-xs sm:text-sm">
                               <div className="text-neutral-500 mb-1">{t.loanSummary.maxInstallment} / {t.loanSummary.minInstallment}</div>
                               <div className="font-semibold text-neutral-900 text-sm sm:text-base inline-flex items-center gap-1">
-                                {result.meta.maxInstallment} <span className="inline-block w-3 h-0.5 bg-neutral-600 relative">
+                                {maxInstallment} <span className="inline-block w-3 h-0.5 bg-neutral-600 relative">
                                   <span className="absolute right-0 top-1/2 -translate-y-1/2 w-0 h-0 border-l-[4px] border-l-neutral-600 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent"></span>
-                                </span> {result.meta.minInstallment}
+                                </span> {minInstallment}
                               </div>
                             </div>
                           </div>
@@ -454,6 +465,20 @@ export function ComparePage({ selectedTemplateIds }: { selectedTemplateIds: stri
                         />
                       </div>
                     )}
+                    <div className="flex-shrink-0">
+                      <label className="block text-xs font-medium text-neutral-700 mb-1 flex items-center gap-1">
+                        {t.calculator.inflationRate}
+                        <InfoTooltip content={t.tooltips.inflationRate} />
+                      </label>
+                      <ConstrainedNumberInput
+                        value={inputs[template.id]?.inflationRate}
+                        onChange={(v) => updateInput(template.id, { inflationRate: v })}
+                        step={0.01}
+                        className="w-20 sm:w-24"
+                        unit="%"
+                        allowEmpty={true}
+                      />
+                    </div>
                   </div>
                   
                   {/* First payment - inline with main params */}

@@ -98,6 +98,39 @@ export const PRECONFIGURED_TEMPLATES: Template[] = [
     },
   },
   {
+    id: "belarusbank-kredit-na-vozvedenie-rekonstrukcii-zhilya",
+    name: "Belarusbank - loan for construction and reconstruction of residential buildings",
+    nameI18n: {
+      ru: "Беларусбанк - Кредит на возведение (реконструкцию) жилья",
+      be: "Беларусбанк - Крэдыт на будаўніцтва (рэконструкцыю) жылых дамаў",
+    },
+    description: "Loan for construction and reconstruction of residential buildings",
+    descriptionI18n: {
+      ru: "Кредит на возведение (реконструкцию) жилья",
+      be: "Крэдыт на будаўніцтва (рэконструкцыю) жылых дамаў",
+    },
+    currency: 'BYN',
+    amortization: 'Differentiated',
+    dayCount: 'Actual_365',
+    prepaymentPolicy: 'ReduceInstallment',
+    prepaymentsAllowed: true,
+    allowFirstPayment: true,
+    bankUrl: 'https://belarusbank.by',
+    loanUrl: 'https://belarusbank.by/ru/fizicheskim_licam/kredit/financing/kredit-na-stroitelstvo',
+    constraints: {
+      termMonths: { type: 'enum', values: [120, 180, 192, 204, 216, 228, 240] },
+      principal: { type: 'range', min: 1000, step: 1 },
+      firstPaymentPercent: { type: 'range', min: 10, max: 90, step: 0.1 },
+      nominalAnnualRatePercent: {
+        type: 'enum',
+        values: [13.75],
+        labels: {
+          13.75: '(по заключаемым кредитным договорам на возведение жилого помещения в многоквартирном жилом доме (в том числе на условиях долевого участия, путем приобретения жилищных облигаций) в период с 01.10.2025 по 30.11.2025 - ставка рефинансирования НБ РБ + 4,00 п.п.)'
+        }
+      },
+    }
+  },
+  {
     id: 'mtbank-partner-loan-for-real-estate-north-waterfront',
     name: 'MTBank - Partner loan for real estate (North Waterfront)',
     nameI18n: {

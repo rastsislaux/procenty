@@ -94,6 +94,7 @@ export interface LoanConfig {
   firstPayment?: FirstPaymentConfig;
   prepayments?: PrepaymentEvent[];
   prepaymentPolicy?: PrepaymentPolicy;
+  annualInflationRatePercent?: number; // annual inflation rate for present value calculations
 }
 
 export interface ScheduleRow {
@@ -104,6 +105,11 @@ export interface ScheduleRow {
   remainingPrincipal: string;
   periodicRate: string; // per-month decimal (e.g., 0.01 for 1%)
   notes?: string[];
+  // Inflation-adjusted (present value) fields
+  installmentPV?: string; // present value of installment
+  interestPortionPV?: string; // present value of interest portion
+  principalPortionPV?: string; // present value of principal portion
+  remainingPrincipalPV?: string; // present value of remaining principal
 }
 
 export interface LoanResultMeta {
@@ -112,6 +118,11 @@ export interface LoanResultMeta {
   maxInstallment: string;
   minInstallment: string;
   payoffMonth: number;
+  // Inflation-adjusted (present value) totals
+  totalPaidPV?: string; // total paid in present value
+  totalInterestPV?: string; // total interest in present value
+  maxInstallmentPV?: string; // max installment in present value
+  minInstallmentPV?: string; // min installment in present value
 }
 
 export interface LoanResult {
