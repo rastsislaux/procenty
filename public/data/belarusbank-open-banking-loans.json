@@ -67717,7 +67717,7 @@
     "type": "Loan",
     "name": "На потребительские нужды для Клуба «Леди» до 3 лет (дебетовая карта)",
     "segment": "Individual",
-    "dateTime": "2026-02-03T08:00:15+03:00",
+    "dateTime": "2026-02-05T14:01:03+03:00",
     "currentServiceStatus": "Active",
     "loan": {
       "loanCategory": [
@@ -67754,9 +67754,6 @@
               "guarantee": [
                 {
                   "guaranteeType": "Penalty"
-                },
-                {
-                  "guaranteeType": "PersonGuarantee"
                 }
               ],
               "paymentDeferment": [
