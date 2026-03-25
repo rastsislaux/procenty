@@ -33355,7 +33355,7 @@
     "type": "Loan",
     "name": "Кредит \"На сваё\"",
     "segment": "Individual",
-    "dateTime": "2026-03-20T08:00:19+03:00",
+    "dateTime": "2026-03-24T14:00:09+03:00",
     "currentServiceStatus": "Active",
     "loan": {
       "loanCategory": [
@@ -33386,8 +33386,7 @@
               "ownFunds": "0.0",
               "interest": {
                 "interestRateType": "Refinance",
-                "rate": "13.75",
-                "gracePeriodInterest": "13.25"
+                "rate": "13.75"
               },
               "guarantee": [
                 {
