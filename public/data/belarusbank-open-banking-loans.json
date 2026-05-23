@@ -97161,7 +97161,7 @@
     "type": "Loan",
     "name": "На потребительские нужды до 3 лет (безналичное перечисление)",
     "segment": "Individual",
-    "dateTime": "2026-05-22T08:00:18+03:00",
+    "dateTime": "2026-05-22T15:52:01+03:00",
     "currentServiceStatus": "Active",
     "loan": {
       "loanCategory": [
@@ -97191,13 +97191,10 @@
               "periodType": "Annual",
               "interest": {
                 "interestRateType": "Refinance",
-                "rate": "18.5",
-                "gracePeriodInterest": "18.1"
+                "rate": "18.25",
+                "gracePeriodInterest": "17.95"
               },
               "guarantee": [
-                {
-                  "guaranteeType": "Penalty"
-                },
                 {
                   "guaranteeType": "PersonGuarantee"
                 }
