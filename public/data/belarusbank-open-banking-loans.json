@@ -13386,9 +13386,9 @@
       "50010613"
     ],
     "type": "Loan",
-    "name": "Кредит Лёгка ехаць на DONGFENG (грейс 12 месяцев) до 10 лет",
+    "name": "Кредит \"Легка ехаць.Сваё\" (DONGFENG, VGV, Forthing, JAC, Citroen) (грейс 12 месяцев) до 10 лет",
     "segment": "Individual",
-    "dateTime": "2026-06-08T08:00:24+03:00",
+    "dateTime": "2026-06-08T14:06:17+03:00",
     "currentServiceStatus": "Active",
     "loan": {
       "loanCategory": [
@@ -13418,7 +13418,7 @@
               "periodType": "Annual",
               "interest": {
                 "interestRateType": "Refinance",
-                "rate": "16.9",
+                "rate": "16.4",
                 "gracePeriodInterest": "1.9"
               },
               "guarantee": [
@@ -14285,9 +14285,9 @@
       "50010613"
     ],
     "type": "Loan",
-    "name": "Кредит Лёгка ехаць на DONGFENG (грейс 6 месяцев) до 10 лет",
+    "name": "Кредит \"Легка ехаць.Сваё\" (DONGFENG, VGV, Forthing, JAC, Citroen)  (грейс 6 месяцев) до 10 лет",
     "segment": "Individual",
-    "dateTime": "2026-06-08T08:00:23+03:00",
+    "dateTime": "2026-06-08T14:06:17+03:00",
     "currentServiceStatus": "Active",
     "loan": {
       "loanCategory": [
@@ -14317,7 +14317,7 @@
               "periodType": "Annual",
               "interest": {
                 "interestRateType": "Refinance",
-                "rate": "16.9",
+                "rate": "16.4",
                 "gracePeriodInterest": "0.01"
               },
               "guarantee": [
@@ -15184,9 +15184,9 @@
       "50010613"
     ],
     "type": "Loan",
-    "name": "Кредит Лёгка ехаць на BMG (грейс 12 месяцев) до 10 лет",
+    "name": "Кредит\"Легка ехаць.Сваё\" (BMG) (грейс 12 месяцев) до 10 лет",
     "segment": "Individual",
-    "dateTime": "2026-06-08T08:00:23+03:00",
+    "dateTime": "2026-06-08T14:06:16+03:00",
     "currentServiceStatus": "Active",
     "loan": {
       "loanCategory": [
@@ -15216,7 +15216,7 @@
               "periodType": "Annual",
               "interest": {
                 "interestRateType": "Refinance",
-                "rate": "16.9",
+                "rate": "16.4",
                 "gracePeriodInterest": "1.9"
               },
               "guarantee": [
@@ -16083,9 +16083,9 @@
       "50010613"
     ],
     "type": "Loan",
-    "name": "Кредит Лёгка ехаць на BMG (грейс 6 месяцев) до 10 лет",
+    "name": "Кредит\"Легка ехаць.Сваё\" (BMG) (грейс 6 месяцев) до 10 лет",
     "segment": "Individual",
-    "dateTime": "2026-06-08T08:00:23+03:00",
+    "dateTime": "2026-06-08T14:06:16+03:00",
     "currentServiceStatus": "Active",
     "loan": {
       "loanCategory": [
@@ -16115,7 +16115,7 @@
               "periodType": "Annual",
               "interest": {
                 "interestRateType": "Refinance",
-                "rate": "16.9",
+                "rate": "16.4",
                 "gracePeriodInterest": "0.01"
               },
               "guarantee": [
@@ -25922,9 +25922,9 @@
       "50010613"
     ],
     "type": "Loan",
-    "name": "Кредит \"Легка ехаць\" на  DONGFENG  (грейс 18 месяцев) до 10 лет",
+    "name": "Кредит \"Легка ехаць.Сваё\" (DONGFENG, VGV, Forthing, JAC, Citroen)   (грейс 18 месяцев) до 10 лет",
     "segment": "Individual",
-    "dateTime": "2026-06-08T08:00:21+03:00",
+    "dateTime": "2026-06-08T14:06:16+03:00",
     "currentServiceStatus": "Active",
     "loan": {
       "loanCategory": [
@@ -25954,7 +25954,7 @@
               "periodType": "Annual",
               "interest": {
                 "interestRateType": "Refinance",
-                "rate": "16.9",
+                "rate": "17.0",
                 "gracePeriodInterest": "3.9"
               },
               "guarantee": [
@@ -26821,9 +26821,9 @@
       "50010613"
     ],
     "type": "Loan",
-    "name": "Кредит \"Легка ехаць\" на BMG  (грейс 18 месяцев) до 10 лет",
+    "name": "Кредит\"Легка ехаць.Сваё\" (BMG) (грейс 18 месяцев) до 10 лет",
     "segment": "Individual",
-    "dateTime": "2026-06-08T08:00:20+03:00",
+    "dateTime": "2026-06-08T14:06:16+03:00",
     "currentServiceStatus": "Active",
     "loan": {
       "loanCategory": [
@@ -26853,7 +26853,7 @@
               "periodType": "Annual",
               "interest": {
                 "interestRateType": "Refinance",
-                "rate": "16.9",
+                "rate": "17.0",
                 "gracePeriodInterest": "3.9"
               },
               "guarantee": [
