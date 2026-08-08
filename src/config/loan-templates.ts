@@ -189,7 +189,70 @@ export const PRECONFIGURED_TEMPLATES: Template[] = [
       graceReducedAnnualRatePercent: { type: 'enum', values: [1.99, 2.99, 16.5, 16.6] },
       nominalAnnualRatePercent: { type: 'enum', values: [15.885, 16.92, 16.875, 17.1] },
     },
-  }
+  },
+  {
+    id: 'belarusbank-ipoteka-s-nami',
+    name: 'Belarusbank - Mortgage with us (partner developers)',
+    nameI18n: {
+      ru: 'Беларусбанк - Ипотека с нами (партнеры-застройщики)',
+      be: 'Беларусбанк - Іпатэка з намі (партнёры-забудоўшчыкі)',
+    },
+    description:
+      'Partner mortgage with developers. From 10.08.2026: 24-month grace at 1% p.a., then 15.4% (refinancing rate + 6.15 pp). Annuity payments. For multi-apartment construction, principal repayment starts the month after 12 months following the month of the credit agreement. Financing up to 100% (no down payment required).',
+    descriptionI18n: {
+      ru: 'Кредит совместно с партнерами-застройщиками. С 10.08.2026: грейс-период 24 месяца под 1% годовых, далее 15,4% (ставка рефинансирования + 6,15 п.п.). Аннуитетные платежи. При возведении жилья в многоквартирных домах погашение основного долга — со следующего месяца после истечения 12 месяцев, следующих за месяцем заключения кредитного договора. Финансирование до 100% стоимости (первоначальный взнос не обязателен).',
+      be: 'Крэдыт сумесна з партнёрамі-забудоўшчыкамі. З 10.08.2026: грэйс-перыяд 24 месяцы пад 1% гадавых, далей 15,4% (стаўка рэфінансавання + 6,15 п.п.). Ануітэтныя плацяжы. Пры ўзвядзенні жылля ў шматкватэрных дамах пагашэнне асноўнага доўгу — з наступнага месяца пасля сканчэння 12 месяцаў, якія ідуць за месяцам заключэння крэдытнага дагавора. Фінансаванне да 100% кошту (пачатковы ўзнос не абавязковы).',
+    },
+    currency: 'BYN',
+    nominalAnnualRatePercent: 15.4,
+    amortization: 'Annuity',
+    dayCount: 'Actual_365',
+    prepaymentPolicy: 'ReduceInstallment',
+    prepaymentsAllowed: true,
+    allowFirstPayment: true,
+    grace: {
+      type: 'ReducedRate',
+      months: 24,
+      reducedAnnualRatePercent: 1,
+    },
+    bankUrl: 'https://belarusbank.by',
+    loanUrl:
+      'https://belarusbank.by/fizicheskim_licam/kredit/financing/kredit-ipoteka-s-nami-v-ramkakh-partnerskikh-programm/',
+    constraints: {
+      termMonths: {
+        type: 'enum',
+        values: [
+          12 * 5,
+          12 * 6,
+          12 * 7,
+          12 * 8,
+          12 * 9,
+          12 * 10,
+          12 * 11,
+          12 * 12,
+          12 * 13,
+          12 * 14,
+          12 * 15,
+          12 * 16,
+          12 * 17,
+          12 * 18,
+          12 * 19,
+          12 * 20,
+        ],
+      },
+      principal: { type: 'range', min: 1000, step: 1 },
+      firstPaymentPercent: { type: 'range', min: 0, max: 100, step: 0.1 },
+      graceMonths: { type: 'enum', values: [24] },
+      graceReducedAnnualRatePercent: { type: 'enum', values: [1] },
+      nominalAnnualRatePercent: {
+        type: 'enum',
+        values: [15.4],
+        labels: {
+          15.4: '(ставка рефинансирования НБ РБ + 6,15 п.п.; с 10.08.2026 — грейс-период 24 месяца под 1%)',
+        },
+      },
+    },
+  },
 ];
 
 export const USER_TEMPLATES_STORAGE_KEY = 'procenty.userTemplates.v1';
