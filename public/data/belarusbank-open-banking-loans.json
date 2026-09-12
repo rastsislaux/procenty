@@ -31944,7 +31944,7 @@
     "type": "Loan",
     "name": "Кредит «На ўсё!» (безналичное перечисление, эл. кред. договор, кредитная линия)",
     "segment": "Individual",
-    "dateTime": "2026-09-11T08:00:24+03:00",
+    "dateTime": "2026-09-11T15:56:58+03:00",
     "currentServiceStatus": "Active",
     "loan": {
       "loanCategory": [
@@ -31974,8 +31974,8 @@
               "periodType": "Annual",
               "interest": {
                 "interestRateType": "Refinance",
-                "rate": "17.45",
-                "gracePeriodInterest": "17.15"
+                "rate": "17.35",
+                "gracePeriodInterest": "17.05"
               },
               "guarantee": [
                 {
