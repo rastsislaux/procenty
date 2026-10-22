@@ -176369,7 +176369,7 @@
     "type": "Loan",
     "name": "Овердрафт для студентов в рамках банковского продукта «Студенческая карточка (Карточка учащегося)»",
     "segment": "Individual",
-    "dateTime": "2026-10-19T08:00:30+03:00",
+    "dateTime": "2026-10-21T16:41:48+03:00",
     "currentServiceStatus": "Active",
     "loan": {
       "loanCategory": [
@@ -176394,7 +176394,7 @@
           "term": [
             {
               "amountMin": "10.00",
-              "amountMax": "370.00",
+              "amountMax": "740.00",
               "period": 2,
               "periodType": "Annual",
               "interest": {
